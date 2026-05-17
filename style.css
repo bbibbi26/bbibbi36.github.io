@@ -236,13 +236,36 @@ body {
 .post-list::-webkit-scrollbar { width: 4px; }
 .post-list::-webkit-scrollbar-thumb { background: rgba(0,118,255,0.15); border-radius: 10px; }
 
-#boot-loader {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #ffffff; z-index: 9999; display: flex;
-    justify-content: center; align-items: center;
-    font-family: 'Courier New', monospace; color: var(--main-pink);
-    transition: opacity 0.5s ease;
-}
+/* --- ❄️ 로딩 화면 하얀색 & 파란색 테마로 부분 수정 --- */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1s ease-out;
+        }
+        .loader-box { width: 300px; text-align: left; }
+        .loader-bar { 
+            width: 0%; height: 4px; 
+            background: var(--main-blue); 
+            box-shadow: 0 0 20px var(--main-blue), 0 0 40px rgba(112, 214, 255, 0.5); 
+            margin: 15px 0; 
+            transition: width 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
+        }
+        .loading-text { 
+            font-family: var(--font-light); 
+            font-size: 0.85rem; 
+            color: var(--main-blue); 
+            letter-spacing: 2px; 
+            margin-bottom: 5px; 
+            height: 20px;
+            text-shadow: 0 0 8px rgba(112, 214, 255, 0.6);
+        }
+        #percent {
+            color: var(--cyber-white);
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            text-align: right;
+        }
 
 @keyframes popIn { from { opacity: 0; transform: scale(0.98) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
