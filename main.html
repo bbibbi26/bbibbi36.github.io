@@ -254,10 +254,11 @@
     </div>
 
     <script type="module">
+        // 🌟 1. 맨 위에 데이터베이스 필수 기능 라이브러리를 추가합니다.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // Firebase 설정
+        // 🌟 2. 그 아래에 확인하신 콘솔 설정을 넣습니다.
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
@@ -268,14 +269,14 @@
             appId: "1:27439633492:web:c60461eb2583b76e62c9c1"
         };
 
+        // 🌟 3. 데이터베이스 시스템 활성화를 호출합니다.
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const db = getDatabase(app); // 👈 이제 이 db 변수가 동작하여 데이터를 실제로 쏩니다!
 
-        // 실시간 데이터베이스 노드 정의
+        // --- 이 밑으로는 기존에 있던 나머지 자바스크립트 로직들을 그대로 유지하시면 됩니다 ---
         const chatRef = ref(db, 'multi_chat_history');
         const diaryRef = ref(db, 'multi_diaries');
-        const stickerRef = ref(db, 'multi_stickers');
-        const presenceRootRef = ref(db, 'multi_presence');
+        // ... 생략
 
         // 세션 로드
         let session = JSON.parse(localStorage.getItem('nya_multi_session'));
