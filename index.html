@@ -376,9 +376,12 @@
             setTimeout(() => { location.href = "main.html"; }, 600);
         }
 
-        document.getElementById('passcode').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') window.validateAccess();
-        });
+      document.getElementById('passcode').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // 엔터 키의 기본 동작 방지
+        validateAccess();   // 모듈 내부 함수 직접 호출
+    }
+});
     </script>
 </body>
 </html>
