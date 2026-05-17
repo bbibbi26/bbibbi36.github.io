@@ -131,7 +131,7 @@
             background: rgba(112, 214, 255, 0.05);
             border: 1px solid var(--soft-blue);
         }
-        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
         .user-name { font-size: 0.8rem; font-family: var(--font-main); color: var(--cyber-white); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .user-option:hover .user-name { color: var(--main-blue); }
 
@@ -169,8 +169,26 @@
     </div>
 
     <script type="module">
-        // 고정 멤버 정보 리스트
-        const FIXED_USERS = [
+        // 🌟 main.html과 100% 동일한 Firebase 라이브러리 및 설정 주소 동기화 임베딩
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
+            authDomain: "nya-ppi.firebaseapp.com",
+            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com",
+            projectId: "nya-ppi",
+            storageBucket: "nya-ppi.firebasestorage.app",
+            messagingSenderId: "27439633492",
+            appId: "1:27439633492:web:c60461eb2583b76e62c9c1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const presenceRootRef = ref(db, 'multi_presence');
+
+        // 기본 백업 멤버 정보 리스트 (네트워크 장애 등으로 DB를 읽기 전 노출용 기본값)
+        let FIXED_USERS = [
             { userId: "user_me", name: "NYA_PPI", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
             { userId: "user_member3", name: "댕댕이", icon: "🐶", xUrl: "https://x.com" },
@@ -178,6 +196,26 @@
             { userId: "user_member5", name: "햄찌", icon: "🐹", xUrl: "https://x.com" },
             { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
         ];
+
+        // 🌟 실시간 데이터베이스(multi_presence)에서 유저들의 변경된 이름/아이콘 상태를 실시간 연동하여 매핑
+        onValue(presenceRootRef, (snap) => {
+            const liveUsers = snap.val() || {};
+            FIXED_USERS = FIXED_USERS.map(user => {
+                if (liveUsers[user.userId]) {
+                    return {
+                        ...user,
+                        name: liveUsers[user.userId].name || user.name,
+                        icon: liveUsers[user.userId].icon || user.icon,
+                        xUrl: liveUsers[user.userId].xUrl || user.xUrl
+                    };
+                }
+                return user;
+            });
+            // 만약 현재 패널이 열려 있는 상태라면 UI를 실시간으로 새로고침 해줍니다.
+            if (document.getElementById('user-select-content').style.display === 'block') {
+                renderMemberGrid();
+            }
+        });
 
         // 하이패스 자동로그인 체크 로직
         window.addEventListener('load', () => {
@@ -189,7 +227,6 @@
         });
 
         // 로딩바 애니메이션 연출
-        // ❄️ 블루 테마 로딩 텍스트 문구 수정
         const messages = [
             "CONNECTING TO BLUE_STREAM...", 
             "LOADING CYBER_ASSETS...", 
