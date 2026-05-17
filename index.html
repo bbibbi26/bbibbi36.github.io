@@ -3,27 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>안아조요 // 6_MEMBERS_LOGIN</title>
+    <title>안아조요 // BLUE_6_LOGIN</title>
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
     
     <style>
         :root {
-            --main-pink: #ff7eb9;
-            --soft-pink: #ffe4f1;
-            --cyber-white: #ffffff;
-            --accent-blue: #70d6ff;
+            /* main.html 기반의 화이트 & 블루 테마 스펙 정의 */
+            --bg-dark: #0a0e17;
+            --main-blue: #70d6ff;
+            --soft-blue: rgba(112, 214, 255, 0.15);
+            --cyber-white: #e2e8f0;
+            --accent-pink: #ff007f;
             --font-main: 'GmarketSansBold', sans-serif;
             --font-light: 'GmarketSansLight', sans-serif;
         }
 
         body {
-            background-color: var(--soft-pink);
+            background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 50% 50%, #ffffff 0%, #ffe4f1 100%),
-                linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+                radial-gradient(circle at 50% 50%, #101626 0%, #0a0e17 100%),
+                linear-gradient(rgba(112, 214, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(112, 214, 255, 0.03) 1px, transparent 1px);
             background-size: 100% 100%, 30px 30px, 30px 30px;
-            color: var(--main-pink);
+            color: var(--cyber-white);
             font-family: var(--font-main);
             display: flex; justify-content: center; align-items: center;
             height: 100vh; margin: 0; overflow: hidden;
@@ -35,31 +37,27 @@
         /* --- 로딩 화면 --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--soft-pink); z-index: 100;
+            background: var(--bg-dark); z-index: 100;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 1s ease-out;
         }
         .loader-box { width: 300px; text-align: left; }
-        .loader-bar { width: 0%; height: 4px; background: var(--main-pink); box-shadow: 0 0 15px var(--main-pink); margin: 15px 0; transition: width 0.5s; }
-        .loading-text { font-family: var(--font-light); font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 5px; height: 20px; }
+        .loader-bar { width: 0%; height: 4px; background: var(--main-blue); box-shadow: 0 0 15px var(--main-blue); margin: 15px 0; transition: width 0.5s; }
+        .loading-text { font-family: var(--font-light); font-size: 0.9rem; color: var(--cyber-white); letter-spacing: 1px; margin-bottom: 5px; height: 20px; }
 
-        /* --- 공통 프레임 스타일 --- */
+        /* --- 사이버 블루 프레임 스타일 --- */
         .login-frame, .user-select-frame {
             display: none;
             position: relative;
             width: 420px;
             padding: 50px 25px;
-            background-color: rgba(255, 255, 255, 0.95);
-            border: 3px solid transparent;
-            border-radius: 50px 15px 50px 15px;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), 
-                              linear-gradient(90deg, var(--main-pink), var(--accent-blue));
-            background-origin: border-box;
-            background-clip: padding-box, border-box;
-            box-shadow: 15px 15px 30px rgba(255, 126, 185, 0.15), 
-                        -5px -5px 15px rgba(255, 255, 255, 0.8);
+            background-color: rgba(10, 14, 23, 0.85);
+            border: 2px solid var(--cyber-white);
+            border-radius: 40px 10px 40px 10px;
+            box-shadow: 0 0 30px rgba(112, 214, 255, 0.15), 
+                        inset 0 0 15px rgba(255, 255, 255, 0.05);
             text-align: center;
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
             animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             box-sizing: border-box;
         }
@@ -68,29 +66,33 @@
 
         h1 {
             font-size: 3rem; margin-bottom: 40px; letter-spacing: 6px; 
-            color: var(--main-pink); text-transform: uppercase;
-            text-shadow: 2px 2px 0px #fff;
+            color: var(--cyber-white); text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
         input {
-            width: 100%; background: #fff; border: 2px solid var(--soft-pink);
-            border-radius: 15px; padding: 15px; color: var(--main-pink); font-size: 1.1rem;
+            width: 100%; background: rgba(0, 0, 0, 0.4); border: 2px solid var(--soft-blue);
+            border-radius: 12px; padding: 15px; color: #fff; font-size: 1.1rem;
             text-align: center; outline: none; box-sizing: border-box;
             font-family: var(--font-main); transition: 0.3s ease;
+            letter-spacing: 2px;
         }
-        input:focus { border-color: var(--main-pink); box-shadow: 0 0 10px rgba(255, 126, 185, 0.1); }
+        input:focus { border-color: var(--main-blue); box-shadow: 0 0 15px rgba(112, 214, 255, 0.3); }
 
         button {
-            width: 100%; margin-top: 25px; padding: 18px; background: var(--main-pink);
-            border: none; color: #fff; font-size: 1.2rem; letter-spacing: 5px; cursor: pointer; 
-            border-radius: 15px 40px 15px 40px; font-family: var(--font-main);
+            width: 100%; margin-top: 25px; padding: 18px; background: transparent;
+            border: 2px solid var(--cyber-white); color: var(--cyber-white); font-size: 1.2rem; letter-spacing: 5px; cursor: pointer; 
+            border-radius: 12px 30px 12px 30px; font-family: var(--font-main);
             transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 20px rgba(255, 126, 185, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+            text-transform: uppercase;
         }
-        button:hover { background: #ff50a0; transform: translateY(-4px); }
+        button:hover { background: var(--cyber-white); color: var(--bg-dark); box-shadow: 0 0 25px rgba(255, 255, 255, 0.8); transform: translateY(-3px); }
         
-        button.access-granted { background: var(--accent-blue); box-shadow: 0 0 20px var(--accent-blue); }
-        button.denied { background: #ff4d4d; animation: shake 0.4s ease; }
+        button.access-granted { border-color: var(--main-blue); color: var(--main-blue); box-shadow: 0 0 25px var(--main-blue); }
+        button.access-granted:hover { background: var(--main-blue); color: var(--bg-dark); }
+        button.denied { border-color: #ff4d4d; color: #ff4d4d; box-shadow: 0 0 20px #ff4d4d; animation: shake 0.4s ease; }
+        button.denied:hover { background: #ff4d4d; color: #fff; }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -98,7 +100,7 @@
             75% { transform: translateX(10px); }
         }
 
-        /* --- 6인용 유저 그리드 배치 (2열 3행 구조) --- */
+        /* --- 6인용 사이버 블루 그리드 배치 --- */
         .user-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -109,29 +111,31 @@
             padding-right: 4px;
         }
         
-        /* 스크롤바 커스텀 */
+        /* 스크롤바 일렉트릭 블루 스타일화 */
         .user-grid::-webkit-scrollbar { width: 4px; }
-        .user-grid::-webkit-scrollbar-thumb { background: var(--main-pink); border-radius: 10px; }
-        .user-grid::-webkit-scrollbar-track { background: var(--soft-pink); }
+        .user-grid::-webkit-scrollbar-thumb { background: var(--main-blue); border-radius: 10px; }
+        .user-grid::-webkit-scrollbar-track { background: var(--bg-dark); }
 
         .user-option {
-            padding: 15px 10px; border: 2px solid var(--soft-pink); border-radius: 20px;
-            cursor: pointer; transition: 0.3s; background: #fff;
+            padding: 15px 10px; border: 2px solid var(--soft-blue); border-radius: 15px;
+            cursor: pointer; transition: 0.3s; background: rgba(16, 22, 38, 0.6);
             display: flex; flex-direction: column; align-items: center; overflow: hidden;
             box-sizing: border-box;
         }
-        .user-option:hover { transform: translateY(-3px); border-color: var(--main-pink); background: var(--soft-pink); }
+        .user-option:hover { transform: translateY(-3px); border-color: var(--main-blue); background: var(--soft-blue); box-shadow: 0 0 15px rgba(112, 214, 255, 0.2); }
         
         .user-avatar { 
             width: 45px; height: 45px; font-size: 1.8rem; margin-bottom: 8px; 
             display: flex; align-items: center; justify-content: center; 
             overflow: hidden; border-radius: 50%;
-            background: rgba(255, 126, 185, 0.05);
+            background: rgba(112, 214, 255, 0.05);
+            border: 1px solid var(--soft-blue);
         }
         .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .user-name { font-size: 0.8rem; font-family: var(--font-main); color: var(--main-pink); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-name { font-size: 0.8rem; font-family: var(--font-main); color: var(--cyber-white); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-option:hover .user-name { color: var(--main-blue); }
 
-        .footer-info { margin-top: 25px; font-size: 0.75rem; color: var(--main-pink); display: flex; justify-content: space-between; opacity: 0.7; font-family: var(--font-light); }
+        .footer-info { margin-top: 25px; font-size: 0.75rem; color: var(--cyber-white); display: flex; justify-content: space-between; opacity: 0.6; font-family: var(--font-light); letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -155,7 +159,7 @@
     </div>
 
     <div class="user-select-frame" id="user-select-content">
-        <h1 style="font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 3px;">WHO ARE YOU?</h1>
+        <h1 style="font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 3px; color: var(--cyber-white);">WHO ARE YOU?</h1>
         
         <div class="user-grid" id="member-grid-target"></div>
         
@@ -165,7 +169,7 @@
     </div>
 
     <script type="module">
-        // 🌟 [수정 안내] 각 유저의 name, icon(이모지 혹은 이미지 주소), xUrl을 실제 친구분들 정보로 자유롭게 바꾸세요!
+        // 고정 멤버 정보 리스트
         const FIXED_USERS = [
             { userId: "user_me", name: "NYA_PPI", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
@@ -212,7 +216,7 @@
             }, 400);
         }
 
-        // 패스코드 인증 실행
+        // 패스코드 인증 실행 (설정 유지: "0000")
         window.validateAccess = function() {
             const passField = document.getElementById('passcode');
             const btn = document.getElementById('login-btn');
