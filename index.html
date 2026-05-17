@@ -8,7 +8,6 @@
     
     <style>
         :root {
-            /* main.html 기반의 화이트 & 블루 테마 스펙 정의 */
             --bg-dark: #0a0e17;
             --main-blue: #70d6ff;
             --soft-blue: rgba(112, 214, 255, 0.15);
@@ -34,16 +33,52 @@
 
         body.fade-out { opacity: 0; transform: scale(1.05); }
 
-        /* --- 로딩 화면 --- */
+        /* --- 🌟 사이버 로딩 화면 업그레이드 --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark); z-index: 100;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1s ease-out;
+            transition: opacity 0.8s ease-out;
         }
-        .loader-box { width: 300px; text-align: left; }
-        .loader-bar { width: 0%; height: 4px; background: var(--main-blue); box-shadow: 0 0 15px var(--main-blue); margin: 15px 0; transition: width 0.5s; }
-        .loading-text { font-family: var(--font-light); font-size: 0.9rem; color: var(--cyber-white); letter-spacing: 1px; margin-bottom: 5px; height: 20px; }
+
+        /* CRT 모니터 스타일 스캔라인 효과 */
+        #loading-screen::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 101; background-size: 100% 3px, 6px 100%; pointer-events: none;
+        }
+        
+        .loader-box { width: 340px; text-align: left; z-index: 102; position: relative; }
+        
+        /* 메인 로딩 문구 글리치 효과 */
+        .loading-text { 
+            font-family: var(--font-main); font-size: 1rem; color: var(--main-blue); 
+            letter-spacing: 2px; margin-bottom: 8px; height: 24px;
+            text-shadow: 0 0 8px rgba(112, 214, 255, 0.6);
+            animation: textPulse 1s infinite alternate;
+        }
+        
+        @keyframes textPulse {
+            0% { opacity: 0.8; text-shadow: 0 0 4px var(--main-blue); }
+            100% { opacity: 1; text-shadow: 0 0 12px var(--main-blue), 0 0 4px var(--accent-pink); }
+        }
+
+        /* 네온 그라데이션 로딩 바 */
+        .loader-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin: 12px 0; border: 1px solid rgba(112,214,255,0.1); }
+        .loader-bar { 
+            width: 0%; height: 100%; 
+            background: linear-gradient(90deg, var(--main-blue) 0%, var(--accent-pink) 100%); 
+            box-shadow: 0 0 15px var(--main-blue); 
+            transition: width 0.2s cubic-bezier(0.1, 0.8, 0.2, 1); 
+        }
+
+        .loader-status-row { display: flex; justify-content: space-between; font-family: var(--font-light); font-size: 0.75rem; color: rgba(226, 232, 240, 0.6); letter-spacing: 1px; }
+        
+        /* 서브 실시간 로그 연출 상자 */
+        .sub-log-box {
+            margin-top: 15px; height: 35px; overflow: hidden; font-family: monospace; font-size: 0.7rem; color: #4e759a; line-height: 1.4;
+            border-top: 1px dashed rgba(112, 214, 255, 0.2); padding-top: 8px; pointer-events: none;
+        }
 
         /* --- 사이버 블루 프레임 스타일 --- */
         .login-frame, .user-select-frame {
@@ -100,7 +135,6 @@
             75% { transform: translateX(10px); }
         }
 
-        /* --- 6인용 사이버 블루 그리드 배치 --- */
         .user-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -111,7 +145,6 @@
             padding-right: 4px;
         }
         
-        /* 스크롤바 일렉트릭 블루 스타일화 */
         .user-grid::-webkit-scrollbar { width: 4px; }
         .user-grid::-webkit-scrollbar-thumb { background: var(--main-blue); border-radius: 10px; }
         .user-grid::-webkit-scrollbar-track { background: var(--bg-dark); }
@@ -143,8 +176,16 @@
     <div id="loading-screen">
         <div class="loader-box">
             <div class="loading-text" id="status-msg">SYSTEM BOOTING...</div>
-            <div class="loader-bar" id="progress-bar"></div>
-            <div class="loading-text" id="percent">0%</div>
+            <div class="loader-bar-bg">
+                <div class="loader-bar" id="progress-bar"></div>
+            </div>
+            <div class="loader-status-row">
+                <span>CORE_INITIALIZATION</span>
+                <span id="percent">0%</span>
+            </div>
+            <div class="sub-log-box" id="sub-logs">
+                > INITIALIZING SUB_SYSTEM...
+            </div>
         </div>
     </div>
 
@@ -169,7 +210,6 @@
     </div>
 
     <script type="module">
-        // 🌟 main.html과 100% 동일한 Firebase 라이브러리 및 설정 주소 동기화 임베딩
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
@@ -187,7 +227,6 @@
         const db = getDatabase(app);
         const presenceRootRef = ref(db, 'multi_presence');
 
-        // 기본 백업 멤버 정보 리스트 (네트워크 장애 등으로 DB를 읽기 전 노출용 기본값)
         let FIXED_USERS = [
             { userId: "user_me", name: "NYA_PPI", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
@@ -197,7 +236,6 @@
             { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
         ];
 
-        // 🌟 실시간 데이터베이스(multi_presence)에서 유저들의 변경된 이름/아이콘 상태를 실시간 연동하여 매핑
         onValue(presenceRootRef, (snap) => {
             const liveUsers = snap.val() || {};
             FIXED_USERS = FIXED_USERS.map(user => {
@@ -211,13 +249,11 @@
                 }
                 return user;
             });
-            // 만약 현재 패널이 열려 있는 상태라면 UI를 실시간으로 새로고침 해줍니다.
             if (document.getElementById('user-select-content').style.display === 'block') {
                 renderMemberGrid();
             }
         });
 
-        // 하이패스 자동로그인 체크 로직
         window.addEventListener('load', () => {
             const savedSession = localStorage.getItem('nya_multi_session');
             if (savedSession) {
@@ -226,29 +262,56 @@
             }
         });
 
-        // 로딩바 애니메이션 연출
+        // 🌟 정밀하고 다채로워진 실시간 디코딩 문구 리스트
         const messages = [
             "CONNECTING TO BLUE_STREAM...", 
-            "LOADING CYBER_ASSETS...", 
-            "INITIALIZING NEON_INTERFACE...", 
-            "DECODING MEMBER_DATA...", 
-            "SYSTEM READY."
+            "DECRYPTING SECURITY PROTOCOLS...",
+            "LOADING CYBER_ASSETS COMPONENTS...", 
+            "STABILIZING NEON_INTERFACE PORTAL...", 
+            "SYNCHRONIZING FIREBASE REALTIME_DB...",
+            "DECODING INSTANCE MEMBER_DATA...", 
+            "ACCESS PIPELINE READY."
         ];
+
+        // 하단에 고속으로 찍히는 마이크로 로그 서브 시스템
+        const microLogs = [
+            "[OK] DB_STREAMER STARTED", "[INFO] NODE_CONNECTED: 27439633492",
+            "[OK] PACKETS ROUTED VIA SECURE_SSL", "[SUCCESS] TOKEN DECRYPTED",
+            "[INFO] PROFILE_CACHE_SYNC: COMPLETE", "[LOAD] ASSETS_URI MAPPED",
+            "[SYSTEM] ALL CORE SYSTEM ONLINE"
+        ];
+
         let progress = 0;
         const progressBar = document.getElementById('progress-bar');
         const percentText = document.getElementById('percent');
         const statusMsg = document.getElementById('status-msg');
+        const subLogs = document.getElementById('sub-logs');
 
         const interval = setInterval(() => {
-            progress += Math.floor(Math.random() * 15) + 5;
-            if (progress >= 100) { progress = 100; clearInterval(interval); finishLoading(); }
+            progress += Math.floor(Math.random() * 12) + 4;
+            if (progress >= 100) { 
+                progress = 100; 
+                clearInterval(interval); 
+                finishLoading(); 
+            }
+            
             progressBar.style.width = progress + "%";
             percentText.innerText = progress + "%";
+            
             const msgIndex = Math.floor((progress / 100) * messages.length);
-            if (messages[msgIndex]) statusMsg.innerText = messages[msgIndex];
-        }, 200);
+            if (messages[msgIndex] && statusMsg.innerText !== messages[msgIndex]) {
+                statusMsg.innerText = messages[msgIndex];
+            }
+
+            // 진척도에 따라 마이크로 로그를 하단에 무작위로 계속 흘려보내 한층 고급스러운 연출 구현
+            if (Math.random() > 0.4) {
+                const randomLog = microLogs[Math.floor(Math.random() * microLogs.length)];
+                subLogs.innerHTML = `> ${randomLog}<br>> SYSTEM STATUS: ${progress}% PROCESSING...`;
+            }
+        }, 150);
 
         function finishLoading() {
+            subLogs.innerHTML = `> [SUCCESS] SYNC COMPLETE.<br>> REDIRECTING FRAME...`;
             setTimeout(() => {
                 document.getElementById('loading-screen').style.opacity = '0';
                 setTimeout(() => {
@@ -256,11 +319,10 @@
                     if(!localStorage.getItem('nya_multi_session')) {
                         document.getElementById('login-content').style.display = 'block';
                     }
-                }, 1000);
+                }, 800);
             }, 400);
         }
 
-        // 패스코드 인증 실행 (설정 유지: "0000")
         window.validateAccess = function() {
             const passField = document.getElementById('passcode');
             const btn = document.getElementById('login-btn');
@@ -287,7 +349,6 @@
             }
         };
 
-        // 6명 목록 렌더링
         function renderMemberGrid() {
             const grid = document.getElementById('member-grid-target');
             grid.innerHTML = '';
@@ -297,7 +358,6 @@
                 opt.className = 'user-option';
                 opt.onclick = () => selectFixedUser(user);
 
-                // 🌟 [보정 완료] 웹 이미지 주소 및 Base64 인코딩 주소까지 모두 판별 가능하도록 정규식 매칭 강화
                 const isImg = user.icon && (user.icon.startsWith('http') || user.icon.startsWith('data:image'));
                 const avatarHTML = isImg ? `<img src="${user.icon}">` : (user.icon || '👤');
 
@@ -309,9 +369,7 @@
             });
         }
 
-        // 프로필 클릭 로그인 처리 및 이동
         function selectFixedUser(userObj) {
-            // 🌟 [보정 완료] 하드코딩 데이터 대신, 실시간 DB 결합 처리가 완료된 최신 유저 정보를 매핑하여 저장
             const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
             localStorage.setItem('nya_multi_session', JSON.stringify(finalUser));
             document.body.classList.add('fade-out');
