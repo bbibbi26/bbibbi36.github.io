@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>anajoyo / MULTI_INTEGRATED_TERMINAL</title>
+    <title>NYA-PPI / MULTI_INTEGRATED_TERMINAL</title>
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -209,7 +209,7 @@
                     </div>
                 </section>
 
-                <div class="disconnect-btn" onclick="location.href='index.html'">TERMINATE_SESSION_</div>
+                <div class="disconnect-btn" onclick="window.logout()">TERMINATE_SESSION_</div>
             </main>
         </div>
     </div>
@@ -775,6 +775,24 @@
             document.getElementById('current-date').textContent = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
         }
         setInterval(updateClock, 1000); updateClock();
+
+        // 🌟 실시간 다인원 세션 파기용 로그아웃 함수 구현부 (원본 보존 원칙 준수)
+        window.logout = function() {
+            if (confirm("시스템을 종료하고 로그아웃하시겠습니까?")) {
+                localStorage.removeItem('nya_multi_session');
+                if (myPresenceRef) {
+                    remove(myPresenceRef).then(() => {
+                        window.playSystemSound();
+                        alert("SESSION TERMINATED.");
+                        location.href = "index.html";
+                    }).catch(() => {
+                        location.href = "index.html";
+                    });
+                } else {
+                    location.href = "index.html";
+                }
+            }
+        };
     </script>
 </body>
 </html>
