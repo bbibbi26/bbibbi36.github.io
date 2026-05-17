@@ -189,7 +189,14 @@
         });
 
         // 로딩바 애니메이션 연출
-        const messages = ["섹시코테의 머리칼을 빗어주는 중...", "환상의 옷장 정리중...", "엉킨 꼬리털 풀어내는 중...", "놀 준비 완료.", "접속중..."];
+        // ❄️ 블루 테마 로딩 텍스트 문구 수정
+        const messages = [
+            "CONNECTING TO BLUE_STREAM...", 
+            "LOADING CYBER_ASSETS...", 
+            "INITIALIZING NEON_INTERFACE...", 
+            "DECODING MEMBER_DATA...", 
+            "SYSTEM READY."
+        ];
         let progress = 0;
         const progressBar = document.getElementById('progress-bar');
         const percentText = document.getElementById('percent');
