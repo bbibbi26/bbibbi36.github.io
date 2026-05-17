@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYA-PPI / INTEGRATED_TERMINAL</title>
+    <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 모드 전환 버튼 전용 스타일 */
+        .tool-btn {
+            font-size: 9px;
+            padding: 3px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 126, 185, 0.3);
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: 'GmarketSansBold', sans-serif;
+            transition: all 0.2s;
+        }
+        .tool-btn:hover { background: rgba(255, 126, 185, 0.2); }
+        .tool-btn.active {
+            background: #ff7eb9;
+            color: #fff;
+            border-color: #fff;
+            box-shadow: 0 0 10px #ff7eb9;
+        }
+        /* 캔버스 기본 설정: 초기에는 편집 모드이므로 클릭 통과 */
+        #drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 500;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+
+    <div id="sticker-book" class="sticker-container">
+        <div class="sticker-header">
+            <div class="header-title">
+                <span style="font-size: 10px;">📁</span> STICKER_FILE_EXPLORER_V1.0
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button onclick="setMode('edit')" id="btn-edit" class="tool-btn active">MOVE_EDIT</button>
+                <button onclick="setMode('draw')" id="btn-draw" class="tool-btn">PENCIL</button>
+                <button onclick="setMode('erase')" id="btn-erase" class="tool-btn">ERASER</button>
+                
+                <input type="color" id="pen-color" value="#ff7eb9" style="width:18px; height:18px; border:none; background:none; cursor:pointer;">
+                <button onclick="clearCanvas()" class="tool-btn" style="border-color: #ff4b4b; color: #ff4b4b;">CLEAR</button>
+                <div class="header-close" onclick="closeStickerBook()">[CLOSE_X]</div>
+            </div>
+        </div>
+        
+        <div id="sticker-area-wrapper">
+            <div id="sticker-area">
+                <canvas id="drawing-canvas" width="4000" height="4000"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div id="system-log-bg"></div>
+    <div id="boot-loader"><div id="loader-text">> INITIALIZING_SECURE_CONNECTION...</div></div>
+
+    <div class="terminal-frame">
+        <div class="content-wrapper">
+          <aside class="sidebar">
+    <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px;">
+        <div id="session-icon"></div>
+        <div id="other-session-icon" onclick="goToWebSite()" style="cursor: pointer;"></div>
+    </div>
+    <h3 id="session-name"></h3>
+                <p id="session-status" style="font-size: 0.65rem; color: var(--accent-blue); margin-bottom:15px;">짝궁 접속종료!</p>
+                
+                <div style="font-size: 0.65rem; color:rgba(255,255,255,0.3); line-height:2.0;">
+                    <div class="menu-item" onclick="handleMenu('DASHBOARD')">> 공책</div><br>
+                    <div class="menu-item" onclick="handleMenu('STORAGE')">> STORAGE</div><br>
+                    <div class="menu-item" onclick="handleMenu('NETWORK')">> NETWORK</div>
+                </div>
+
+                <div class="settings-panel">
+                    <div class="settings-title">> CONFIG_USER_PROFILE</div>
+                    <input type="text" id="edit-name" class="setting-input" placeholder="이름 변경..." oninput="updateProfile()">
+                    <input type="text" id="edit-icon" class="setting-input" placeholder="아이콘(이모지/URL)..." oninput="updateProfile()">
+                </div>
+
+                <div class="music-section">
+                    <div class="arrow-player" id="arrow-player-wrap">
+                        <div class="arrow-vane" id="music-btn" onclick="toggleMusic()"></div>
+                        <div class="arrow-shaft-container" id="arrow-slider" onclick="seekMusic(event)">
+                            <div class="arrow-shaft-bg">
+                                <div class="arrow-shaft-fill" id="arrow-progress">
+                                    <div class="arrow-circle-knob"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arrow-point-heart"></div>
+                    </div>
+
+                    <div class="volume-container">
+                        <div class="volume-label"><span>VOL</span><span id="vol-value">30%</span></div>
+                        <input type="range" id="volume-range" min="0" max="100" value="30" oninput="changeVolume(this.value)">
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <div id="diary-overlay">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <span class="nav-btn" onclick="changeMonth(-1)">&lt;</span>
+                            <span id="calendar-title" style="font-weight: bold; color: #fff; min-width: 100px; text-align: center;">2024. 05</span>
+                            <span class="nav-btn" onclick="changeMonth(1)">&gt;</span>
+                        </div>
+                        <span style="color:var(--main-pink); cursor:pointer; font-size: 0.7rem;" onclick="closeDiary()">[CLOSE_X]</span>
+                    </div>
+                    <div class="diary-grid" id="diary-grid"></div>
+                </div>
+
+<div id="webview-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2500; display:none; align-items:center; justify-content:center;" onclick="closeWebView()">
+    <div style="width: 85%; height: 85%; background: #1a1a24; border: 2px solid var(--main-pink); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 30px rgba(255, 126, 185, 0.3);" onclick="event.stopPropagation()">
+        <div style="background: rgba(255,255,255,0.03); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <span style="font-size: 11px; color: #fff; font-family: 'GmarketSansBold'; letter-spacing: 1px;">🌐 LINKED_STREAM_VIEWER</span>
+            <span style="color: var(--main-pink); cursor: pointer; font-size: 11px; font-family: 'GmarketSansBold';" onclick="closeWebView()">[CLOSE_X]</span>
+        </div>
+        <iframe id="webview-frame" src="about:blank" style="width: 100%; height: 100%; border: none; background: #fff;"></iframe>
+    </div>
+</div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+                    <div>
+                        <div id="current-date" style="font-size: 0.65rem; color: var(--accent-blue);">DATE</div>
+                        <div id="current-time" style="font-size: 1.5rem; font-weight: bold;">00:00:00</div>
+                    </div>
+                    <div id="post-count" style="font-size: 0.65rem; opacity: 0.5;">MEMORIES: 00</div>
+                </div>
+
+                <section class="system-board">
+                    <div class="board-header">> CONNECTION_ESTABLISHED // DATA_STREAM_READY</div>
+                    <ul class="post-list" id="post-list"></ul>
+                    
+                    <div class="input-area">
+                        <input type="text" id="comment-input" placeholder="기록을 남기거나 파일을 끌어넣으세요..." maxlength="200" onpaste="handlePaste(event)">
+                        <button class="save-btn" onclick="saveComment()">SAVE</button>
+                    </div>
+                </section>
+
+                <div class="disconnect-btn" onclick="location.href='index.html'">TERMINATE_SESSION_</div>
+            </main>
+        </div>
+    </div>
+
+    <div id="diary-write-modal">
+        <div class="write-box">
+            <h4 id="write-modal-date">DATE_LOG: 2024-05-24</h4>
+            <div id="diary-preview-area" onclick="document.getElementById('diary-file').click()">
+                <span id="preview-placeholder">사진을 선택하거나 끌어넣으세요 (클릭)</span>
+                <img id="write-img-preview" style="display:none; width:100%; height:100%; object-fit:cover;">
+            </div>
+            <input type="file" id="diary-file" hidden accept="image/*" onchange="previewDiaryImage(this)">
+            <textarea id="diary-text-input" placeholder="오늘의 추억을 시스템에 기록하세요..."></textarea>
+            <div class="btn-group">
+                <button class="btn-cancel" onclick="closeWriteModal()">CANCEL</button>
+                <button class="btn-save" onclick="saveDiary()">SAVE_RECORD</button>
+                <button id="btn-delete-diary" class="btn-delete" onclick="deleteDiary()">DELETE_RECORD</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="diary-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:200; display:none; align-items:center; justify-content:center;" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-left">
+                <div id="modal-date" style="font-size:0.6rem; color:var(--accent-blue); margin-bottom:10px;"></div>
+                <img id="modal-img" style="width:100%; border-radius:15px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" onclick="triggerEdit()">
+                <div id="modal-text" style="font-family:var(--font-light); font-size:0.85rem; line-height:1.5; margin-bottom:20px; color:#fff;"></div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-save" style="flex:1; padding:10px; font-size:0.65rem;" onclick="triggerEdit()">EDIT_POST</button>
+                    <button class="btn-cancel" style="flex:1; padding:10px; font-size:0.65rem;" onclick="document.getElementById('diary-modal').style.display='none'">CLOSE</button>
+                </div>
+            </div>
+            <div class="modal-right">
+                <div style="font-size: 0.65rem; color: var(--accent-blue); margin-bottom: 15px; letter-spacing: 1px;">> FEEDBACK_LOG</div>
+                <div class="diary-comment-list" id="diary-comment-list"></div>
+                <div class="diary-comment-input-wrap">
+                    <input type="text" id="diary-comment-input" class="diary-comment-input" placeholder="감상평 남기기...">
+                    <button class="save-btn" style="padding:0 15px; border-radius:8px;" onclick="saveDiaryComment()">SEND</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
+            authDomain: "nya-ppi.firebaseapp.com",
+            projectId: "nya-ppi",
+            storageBucket: "nya-ppi.firebasestorage.app",
+            messagingSenderId: "27439633492",
+            appId: "1:27439633492:web:1cd43fd32322f6bc62c9c1",
+            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com/" 
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const chatRef = database.ref('nya_chat_history');
+        const diaryRef = database.ref('nya_diaries');
+        const stickerRef = database.ref('nya_stickers'); 
+
+        let session = JSON.parse(localStorage.getItem('nya_current_session'));
+        if (!session) { location.href = 'index.html'; }
+
+        /* --- [알림음 동기화 전용 변수] --- */
+        let lastMessageId = null;
+
+        /* --- [스티커북 및 낙서 전용 로직] --- */
+        let drawingCanvas, ctx, isDrawing = false;
+        let currentMode = 'edit'; // 초기 모드: 편집
+
+        function openStickerBook() {
+            const book = document.getElementById('sticker-book');
+            const wrapper = document.getElementById('sticker-area-wrapper');
+            book.style.display = 'flex'; 
+            if(wrapper) { wrapper.scrollLeft = 0; wrapper.scrollTop = 0; }
+            renderStickers();
+            setupStickerDrop(); 
+            initDrawingCanvas();
+            setMode('edit'); // 열 때 항상 편집 모드로 시작
+            systemLog("OPENING_STICKER_BOOK...");
+        }
+
+        function closeStickerBook() {
+            document.getElementById('sticker-book').style.display = 'none';
+            systemLog("CLOSING_STICKER_BOOK...");
+        }
+
+        function initDrawingCanvas() {
+            drawingCanvas = document.getElementById('drawing-canvas');
+            ctx = drawingCanvas.getContext('2d');
+            ctx.lineCap = "round";
+
+            drawingCanvas.addEventListener('mousedown', startDrawing);
+            drawingCanvas.addEventListener('mousemove', drawLine);
+            window.addEventListener('mouseup', stopDrawing);
+
+            // 터치 지원
+            drawingCanvas.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                startDrawing({ clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => e.preventDefault() });
+            }, { passive: false });
+            drawingCanvas.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                drawLine({ clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => e.preventDefault() });
+            }, { passive: false });
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            const canvas = document.getElementById('drawing-canvas');
+            
+            // 버튼 스타일 업데이트
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            const targetBtn = document.getElementById(`btn-${mode}`);
+            if(targetBtn) targetBtn.classList.add('active');
+
+            if (mode === 'edit') {
+                canvas.style.pointerEvents = 'none'; // 캔버스 통과
+                canvas.style.cursor = 'default';
+            } else {
+                canvas.style.pointerEvents = 'auto'; // 캔버스 활성화
+                canvas.style.cursor = 'crosshair';
+                if (mode === 'erase') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.lineWidth = 25;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.lineWidth = 4;
+                }
+            }
+            systemLog(`MODE: ${mode.toUpperCase()}`);
+        }
+
+        function startDrawing(e) {
+            if (currentMode === 'edit') return;
+            isDrawing = true;
+            const rect = drawingCanvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            if(e.preventDefault) e.preventDefault();
+        }
+
+        function drawLine(e) {
+            if (!isDrawing || currentMode === 'edit') return;
+            const rect = drawingCanvas.getBoundingClientRect();
+            if (currentMode === 'draw') ctx.strokeStyle = document.getElementById('pen-color').value;
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            if(e.preventDefault) e.preventDefault();
+        }
+
+        function stopDrawing() { isDrawing = false; }
+
+        function clearCanvas() {
+            if(confirm("그린 내용을 모두 지울까요?")) {
+                ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                systemLog("CANVAS_CLEARED.");
+            }
+        }
+
+        function setupStickerDrop() {
+            const area = document.getElementById('sticker-area');
+            area.ondragover = (e) => e.preventDefault();
+            area.ondrop = (e) => {
+                e.preventDefault();
+                const files = e.dataTransfer.files;
+                if (files && files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const rect = area.getBoundingClientRect();
+                        const posX = e.clientX - rect.left;
+                        const posY = e.clientY - rect.top;
+                        stickerRef.push().set({
+                            image: event.target.result,
+                            posX: posX - 75, posY: posY - 75,
+                            width: 150, timestamp: Date.now()
+                        });
+                        systemLog("STICKER_ADDED.");
+                        playSystemSound();
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+            };
+        }
+
+        function renderStickers() {
+            const area = document.getElementById('sticker-area');
+            const wrapper = document.getElementById('sticker-area-wrapper');
+            stickerRef.on('value', (snap) => {
+                area.querySelectorAll('.sticker').forEach(s => s.remove());
+                const data = snap.val() || {};
+                Object.entries(data).forEach(([key, val]) => {
+                    if (val.image) {
+                        const sticker = document.createElement('div');
+                        sticker.className = 'sticker';
+                        sticker.style.left = (val.posX || 50) + 'px';
+                        sticker.style.top = (val.posY || 50) + 'px';
+                        sticker.style.width = (val.width || 150) + 'px';
+                        sticker.innerHTML = `
+                            <img src="${val.image}" style="width:100%; height:auto;">
+                            <div class="resizer"></div>
+                            <div class="sticker-delete" onclick="deleteSticker('${key}')" style="position:absolute; top:-10px; right:-10px; cursor:pointer; background:#fff; color:red; border-radius:50%; width:20px; height:20px; text-align:center; font-size:12px; line-height:20px; display:none; border:1px solid #ddd; z-index:210;">✕</div>
+                        `;
+                        sticker.onmouseenter = () => sticker.querySelector('.sticker-delete').style.display = 'block';
+                        sticker.onmouseleave = () => sticker.querySelector('.sticker-delete').style.display = 'none';
+                        sticker.onmousedown = (e) => {
+                            if (currentMode !== 'edit' || e.target.className === 'resizer' || e.target.className === 'sticker-delete') return;
+                            let shiftX = e.clientX - sticker.getBoundingClientRect().left;
+                            let shiftY = e.clientY - sticker.getBoundingClientRect().top;
+                            function onMouseMove(e) {
+                                const rect = area.getBoundingClientRect();
+                                sticker.style.left = (e.clientX - rect.left + wrapper.scrollLeft - shiftX) + 'px';
+                                sticker.style.top = (e.clientY - rect.top + wrapper.scrollTop - shiftY) + 'px';
+                            }
+                            document.addEventListener('mousemove', onMouseMove);
+                            document.onmouseup = () => {
+                                document.removeEventListener('mousemove', onMouseMove);
+                                stickerRef.child(key).update({ posX: parseInt(sticker.style.left), posY: parseInt(sticker.style.top) });
+                                document.onmouseup = null;
+                            };
+                        };
+                        const resizer = sticker.querySelector('.resizer');
+                        resizer.onmousedown = (e) => {
+                            if (currentMode !== 'edit') return;
+                            e.stopPropagation();
+                            let startX = e.clientX;
+                            let startWidth = parseInt(sticker.style.width, 10);
+                            function onMouseMove(e) {
+                                const newWidth = startWidth + (e.clientX - startX);
+                                if (newWidth > 50) sticker.style.width = newWidth + 'px';
+                            }
+                            document.addEventListener('mousemove', onMouseMove);
+                            document.onmouseup = () => {
+                                document.removeEventListener('mousemove', onMouseMove);
+                                stickerRef.child(key).update({ width: parseInt(sticker.style.width) });
+                                document.onmouseup = null;
+                            };
+                        };
+                        area.appendChild(sticker);
+                    }
+                });
+            });
+        }
+
+        function deleteSticker(key) {
+            if(confirm("이 스티커를 제거할까요?")) {
+                stickerRef.child(key).remove();
+                systemLog("STICKER_REMOVED");
+            }
+        }
+
+        /* --- [기존 시스템 로직 보존] --- */
+        let currentCalendarDate = new Date();
+        let selectedDiaryDate = "";
+        let selectedDiaryImgData = "";
+        let isEditing = false;
+        function openDiary() { document.getElementById('diary-overlay').style.display = 'flex'; renderCalendar(); }
+        function closeDiary() { document.getElementById('diary-overlay').style.display = 'none'; }
+        function renderCalendar() {
+            const grid = document.getElementById('diary-grid');
+            const title = document.getElementById('calendar-title');
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            title.innerText = `${year}. ${String(month + 1).padStart(2, '0')}`;
+            diaryRef.on('value', (snap) => {
+                const data = snap.val() || {}; grid.innerHTML = '';
+                const firstDay = new Date(year, month, 1).getDay();
+                const lastDate = new Date(year, month + 1, 0).getDate();
+                for (let i = 0; i < firstDay; i++) { const empty = document.createElement('div'); empty.className = 'diary-cell'; empty.style.visibility = 'hidden'; grid.appendChild(empty); }
+                for (let i = 1; i <= lastDate; i++) {
+                    const dateKey = `${year}-${month + 1}-${i}`;
+                    const cell = document.createElement('div'); cell.className = 'diary-cell';
+                    if (new Date().toDateString() === new Date(year, month, i).toDateString()) cell.classList.add('today');
+                    cell.innerHTML = `<span class="day-num">${i}</span>`;
+                    if (data[dateKey]) {
+                        cell.classList.add('filled');
+                        cell.innerHTML += `<img src="${data[dateKey].image}" class="preview-img"><div class="preview-text">${data[dateKey].text}</div>`;
+                        cell.onclick = () => showDiaryDetail(dateKey, data[dateKey]);
+                    } else cell.onclick = () => openWriteModal(dateKey);
+                    grid.appendChild(cell);
+                }
+            });
+        }
+        function showDiaryDetail(dateKey, diaryData) {
+            selectedDiaryDate = dateKey;
+            document.getElementById('modal-date').innerText = `DATE_LOG: ${dateKey}`;
+            document.getElementById('modal-img').src = diaryData.image;
+            document.getElementById('modal-text').innerText = diaryData.text;
+            document.getElementById('diary-modal').style.display = 'flex';
+            diaryRef.child(`${dateKey}/comments`).off(); 
+            diaryRef.child(`${dateKey}/comments`).on('value', (snap) => {
+                const comments = snap.val() || {};
+                const commentList = document.getElementById('diary-comment-list');
+                commentList.innerHTML = '';
+                Object.values(comments).sort((a,b) => a.timestamp - b.timestamp).forEach(c => {
+                    const div = document.createElement('div'); div.className = 'diary-comment-item';
+                    div.innerHTML = `<span class="diary-comment-sender">${c.name}</span><div class="diary-comment-text">${c.text}</div>`;
+                    commentList.appendChild(div);
+                });
+                commentList.scrollTop = commentList.scrollHeight;
+            });
+        }
+        function saveDiaryComment() {
+            const input = document.getElementById('diary-comment-input');
+            const text = input.value.trim(); if(!text) return;
+            diaryRef.child(`${selectedDiaryDate}/comments`).push({ name: session.name, text: text, timestamp: Date.now() });
+            input.value = ''; playSystemSound();
+        }
+        function triggerEdit() {
+            const diaryData = { image: document.getElementById('modal-img').src, text: document.getElementById('modal-text').innerText };
+            document.getElementById('diary-modal').style.display = 'none';
+            openWriteModal(selectedDiaryDate, diaryData);
+        }
+        function openWriteModal(dateKey, editData = null) {
+            selectedDiaryDate = dateKey;
+            document.getElementById('write-modal-date').innerText = `DATE_LOG: ${dateKey}`;
+            const pImg = document.getElementById('write-img-preview');
+            const placeholder = document.getElementById('preview-placeholder');
+            const input = document.getElementById('diary-text-input');
+            const delBtn = document.getElementById('btn-delete-diary');
+            if(editData) {
+                isEditing = true; selectedDiaryImgData = editData.image; pImg.src = editData.image; pImg.style.display = 'block';
+                placeholder.style.display = 'none'; input.value = editData.text; delBtn.style.display = 'block';
+            } else {
+                isEditing = false; selectedDiaryImgData = ""; pImg.style.display = 'none';
+                placeholder.style.display = 'block'; input.value = ""; delBtn.style.display = 'none';
+            }
+            document.getElementById('diary-write-modal').style.display = 'flex';
+        }
+        function saveDiary() {
+            const text = document.getElementById('diary-text-input').value.trim();
+            if (!selectedDiaryImgData) { systemLog("ERROR: NO_IMAGE_DETECTED"); return; }
+            const updateData = { image: selectedDiaryImgData, text: text || "...", timestamp: Date.now(), author: session.name };
+            const ref = diaryRef.child(selectedDiaryDate);
+            const task = isEditing ? ref.update(updateData) : ref.set(updateData);
+            task.then(() => { closeWriteModal(); playSystemSound(); systemLog("SUCCESS: DIARY_SAVED"); });
+        }
+        function deleteDiary() {
+            if(confirm("이 일기 기록을 영구히 삭제할까요?")) {
+                diaryRef.child(selectedDiaryDate).remove().then(() => { closeWriteModal(); playSystemSound(); systemLog("SUCCESS: DIARY_DELETED"); });
+            }
+        }
+        function systemLog(msg) {
+            const logBg = document.getElementById('system-log-bg');
+            const div = document.createElement('div'); div.innerText = `> ${msg}`;
+            logBg.appendChild(div); if (logBg.childNodes.length > 6) logBg.removeChild(logBg.firstChild);
+        }
+        const otherType = (session.type === 'me') ? 'other' : 'me';
+        const myPresenceRef = database.ref('presence/' + session.type);
+        const otherPresenceRef = database.ref('presence/' + otherType);
+        const statusDisplay = document.getElementById('session-status');
+        database.ref('.info/connected').on('value', (snap) => {
+            if (snap.val() === true) { myPresenceRef.onDisconnect().set('OFFLINE'); myPresenceRef.set('ONLINE'); }
+        });
+        otherPresenceRef.on('value', (snap) => {
+            const status = snap.val() || 'OFFLINE';
+            statusDisplay.innerText = status === 'ONLINE' ? "짝궁도 접속중!" : "짝궁 접속종료!";
+            statusDisplay.style.color = status === 'ONLINE' ? 'var(--accent-blue)' : 'rgba(255,255,255,0.2)';
+        });
+        function changeMonth(delta) { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta); renderCalendar(); }
+        function closeWriteModal() { document.getElementById('diary-write-modal').style.display = 'none'; }
+        function previewDiaryImage(input) {
+            const file = input.files[0]; if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    selectedDiaryImgData = e.target.result; const img = document.getElementById('write-img-preview');
+                    img.src = e.target.result; img.style.display = 'block'; document.getElementById('preview-placeholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function handleDrop(e) { e.preventDefault(); const files = e.dataTransfer.files; if (files && files[0]) processFile(files[0]); }
+        function handlePaste(e) {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let item of items) if (item.type.indexOf("image") !== -1) processFile(item.getAsFile());
+        }
+        function processFile(file) {
+            if (!file.type.match('image.*')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas'); const MAX_WIDTH = 800;
+                    let width = img.width; let height = img.height;
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height; canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    const compressedData = canvas.toDataURL('image/jpeg', 0.7); sendDirectMessage(compressedData); systemLog("IMAGE_TRANSMITTED");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        function sendDirectMessage(content) {
+            chatRef.push({ id: Date.now(), senderType: session.type, senderName: session.name, content: content, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+        }
+        const bgm = new Audio('bgm.mp3'); bgm.loop = true; bgm.volume = 0.3; let isPlaying = false;
+        function seekMusic(e) {
+            if (!bgm.duration) return;
+            const slider = document.getElementById('arrow-slider'); const rect = slider.getBoundingClientRect();
+            const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+            bgm.currentTime = percent * bgm.duration; document.getElementById('arrow-progress').style.width = (percent * 100) + "%";
+            if (!isPlaying) toggleMusic();
+        }
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            if (!isPlaying) { bgm.play().catch(() => {}); btn.classList.add('playing'); document.getElementById('arrow-player-wrap').classList.add('beating'); isPlaying = true; requestAnimationFrame(syncArrow); }
+            else { bgm.pause(); btn.classList.remove('playing'); document.getElementById('arrow-player-wrap').classList.remove('beating'); isPlaying = false; }
+        }
+        function syncArrow() {
+            if (!isPlaying) return; if (bgm.duration) document.getElementById('arrow-progress').style.width = (bgm.currentTime / bgm.duration) * 100 + "%";
+            requestAnimationFrame(syncArrow);
+        }
+        function changeVolume(val) { bgm.volume = val / 100; document.getElementById('vol-value').innerText = val + "%"; }
+        function handleMenu(type) { playSystemSound(); if(type === 'DASHBOARD') openStickerBook(); if(type === 'STORAGE') openDiary(); systemLog(`ACCESSING_${type}... OK`); }
+        function playSystemSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(850, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
+                oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {}
+        }
+        function updateProfile() {
+            const nameVal = document.getElementById('edit-name').value.trim(); const iconVal = document.getElementById('edit-icon').value.trim();
+            if(nameVal) session.name = nameVal; if(iconVal) session.icon = iconVal;
+            localStorage.setItem('nya_current_session', JSON.stringify(session)); renderProfile();
+        }
+        function renderProfile() {
+    const iconBox = document.getElementById('session-icon'); 
+    const nameBox = document.getElementById('session-name');
+    const otherIconBox = document.getElementById('other-session-icon'); // 짝꿍 아이콘 박스
+    
+    // 1. 내 프로필 렌더링
+    nameBox.innerText = session.name || "Unknown";
+    const isImage = session.icon && (session.icon.startsWith('http') || session.icon.startsWith('data:image'));
+    iconBox.innerHTML = isImage ? `<img src="${session.icon}" style="width:100%; height:100%; object-fit:cover;">` : (session.icon || '👤');
+
+    // 2. 짝꿍 프로필 렌더링 (내 아이콘보다 70% 작은 24px 크기)
+    const otherTypeKey = (session.type === 'me') ? 'other' : 'me';
+    
+    database.ref('presence/' + otherTypeKey).once('value', (snap) => {
+        otherIconBox.innerHTML = `
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #ff7eb9, #7652ff); display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 5px rgba(255, 126, 185, 0.2);">
+                🔗
+            </div>
+        `;
+    });
+}
+
+/* --- [웹뷰 팝업 제어 함수] --- */
+/* --- [새 탭으로 사이트 이동 함수 (사용자별 주소 분기)] --- */
+/* --- [새 탭으로 사이트 이동 함수 (사용자별 주소 분기)] --- */
+function goToWebSite() {
+    playSystemSound(); // 효과음 재생
+    
+    if (session.type === 'me') {
+        // 내가 누르면 짝꿍(상대방)의 X 주소가 새 탭으로 열립니다
+        window.open("https://x.com/ff14_bbiy", "_blank");
+        systemLog("OPENING_NEW_TAB_FOR_OTHER_PROFILE...");
+    } else {
+        // 짝꿍(상대방)이 누르면 나의 X 주소가 새 탭으로 열립니다
+        window.open("https://x.com/Bow_wow__14", "_blank");
+        systemLog("OPENING_NEW_TAB_FOR_MY_PROFILE...");
+    }
+}
+function closeWebView() {
+    document.getElementById('webview-modal').style.display = 'none';
+    systemLog("CLOSING_WEBVIEW.");
+}
+        window.addEventListener('load', () => {
+            document.getElementById('session-icon').style.background = (session.type === 'me') ? 'linear-gradient(135deg, var(--main-pink), var(--main-purple))' : 'linear-gradient(135deg, #00c6ff, #0072ff)';
+            document.getElementById('edit-name').value = session.name; document.getElementById('edit-icon').value = session.icon || '';
+            renderProfile(); setTimeout(() => { const loader = document.getElementById('boot-loader'); if(loader) { loader.style.opacity = "0"; setTimeout(() => loader.remove(), 500); } }, 800);
+            
+            /* --- [실시간 알림음 연동 로직 추가] --- */
+            chatRef.limitToLast(1).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const entries = Object.entries(data);
+                    const [key, post] = entries[0];
+                    // 새로운 메시지이고, 내가 보낸 메시지가 아닐 때 알림음 재생
+                    if (lastMessageId && lastMessageId !== key && post.senderType !== session.type) {
+                        playSystemSound();
+                        systemLog("NEW_MESSAGE_RECEIVED");
+                    }
+                    lastMessageId = key;
+                }
+            });
+
+            chatRef.limitToLast(30).on('value', (snapshot) => renderComments(snapshot.val()));
+        });
+        function saveComment() {
+            const input = document.getElementById('comment-input'); const text = input.value.trim(); if (!text) return;
+            sendDirectMessage(text); input.value = ''; playSystemSound(); 
+        }
+        function renderComments(data) {
+            const postList = document.getElementById('post-list'); postList.innerHTML = ''; if (!data) return;
+            const entries = Object.entries(data); document.getElementById('post-count').innerText = `MEMORIES: ${String(entries.length).padStart(2, '0')}`;
+            entries.forEach(([key, post]) => {
+                const li = document.createElement('li'); const isMe = post.senderType === session.type; li.className = `post-item ${isMe ? 'me' : 'other'}`;
+                const isImg = post.content.startsWith('data:image/') || /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i.test(post.content);
+                li.innerHTML = ` ${isMe ? `<div class="delete-btn" onclick="deleteMessage('${key}')">✕</div>` : ''} <div class="post-sender">${post.senderName}</div> <div class="post-text">${isImg ? `<img src="${post.content}" onclick="window.open(this.src)">` : post.content}</div> <div class="post-info"><span>${post.time}</span></div> `;
+                postList.appendChild(li);
+            });
+            postList.scrollTop = postList.scrollHeight;
+        }
+        function deleteMessage(key) { if (confirm("기록을 파기할까요?")) database.ref('nya_chat_history/' + key).remove(); }
+        document.getElementById('comment-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') saveComment(); });
+        document.getElementById('diary-comment-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') saveDiaryComment(); });
+        function updateClock() {
+            const now = new Date(); document.getElementById('current-time').textContent = now.toLocaleTimeString('en-GB');
+            document.getElementById('current-date').textContent = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        setInterval(updateClock, 1000); updateClock();
+    </script>
+</body>
+</html>
