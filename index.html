@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>안아조요 // MULTI_LOGIN</title>
+    <title>안아조요 // 6_MEMBERS_LOGIN</title>
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
     
     <style>
@@ -44,11 +44,11 @@
         .loading-text { font-family: var(--font-light); font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 5px; height: 20px; }
 
         /* --- 공통 프레임 스타일 --- */
-        .login-frame, .setup-frame {
+        .login-frame, .user-select-frame {
             display: none;
             position: relative;
-            width: 380px;
-            padding: 50px 40px;
+            width: 420px;
+            padding: 50px 25px;
             background-color: rgba(255, 255, 255, 0.95);
             border: 3px solid transparent;
             border-radius: 50px 15px 50px 15px;
@@ -72,19 +72,6 @@
             text-shadow: 2px 2px 0px #fff;
         }
 
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            font-size: 0.75rem;
-            color: var(--main-pink);
-            display: block;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-        }
-
         input {
             width: 100%; background: #fff; border: 2px solid var(--soft-pink);
             border-radius: 15px; padding: 15px; color: var(--main-pink); font-size: 1.1rem;
@@ -92,13 +79,6 @@
             font-family: var(--font-main); transition: 0.3s ease;
         }
         input:focus { border-color: var(--main-pink); box-shadow: 0 0 10px rgba(255, 126, 185, 0.1); }
-        
-        /* 다인원 설정 창 인풋 스타일 조정 */
-        .setup-frame input {
-            font-size: 0.95rem;
-            padding: 12px;
-            font-family: var(--font-light);
-        }
 
         button {
             width: 100%; margin-top: 25px; padding: 18px; background: var(--main-pink);
@@ -118,7 +98,40 @@
             75% { transform: translateX(10px); }
         }
 
-        .footer-info { margin-top: 30px; font-size: 0.75rem; color: var(--main-pink); display: flex; justify-content: space-between; opacity: 0.7; font-family: var(--font-light); }
+        /* --- 6인용 유저 그리드 배치 (2열 3행 구조) --- */
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+            max-height: 330px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        
+        /* 스크롤바 커스텀 */
+        .user-grid::-webkit-scrollbar { width: 4px; }
+        .user-grid::-webkit-scrollbar-thumb { background: var(--main-pink); border-radius: 10px; }
+        .user-grid::-webkit-scrollbar-track { background: var(--soft-pink); }
+
+        .user-option {
+            padding: 15px 10px; border: 2px solid var(--soft-pink); border-radius: 20px;
+            cursor: pointer; transition: 0.3s; background: #fff;
+            display: flex; flex-direction: column; align-items: center; overflow: hidden;
+            box-sizing: border-box;
+        }
+        .user-option:hover { transform: translateY(-3px); border-color: var(--main-pink); background: var(--soft-pink); }
+        
+        .user-avatar { 
+            width: 45px; height: 45px; font-size: 1.8rem; margin-bottom: 8px; 
+            display: flex; align-items: center; justify-content: center; 
+            overflow: hidden; border-radius: 50%;
+            background: rgba(255, 126, 185, 0.05);
+        }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-name { font-size: 0.8rem; font-family: var(--font-main); color: var(--main-pink); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .footer-info { margin-top: 25px; font-size: 0.75rem; color: var(--main-pink); display: flex; justify-content: space-between; opacity: 0.7; font-family: var(--font-light); }
     </style>
 </head>
 <body>
@@ -141,43 +154,37 @@
         </div>
     </div>
 
-    <div class="setup-frame" id="user-setup-content">
-        <h1 style="font-size: 1.8rem; margin-bottom: 30px; letter-spacing: 3px;">USER INITIALIZE</h1>
+    <div class="user-select-frame" id="user-select-content">
+        <h1 style="font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 3px;">WHO ARE YOU?</h1>
         
-        <div class="input-group">
-            <label>> NICKNAME_INPUT</label>
-            <input type="text" id="user-name" placeholder="사용할 닉네임을 적어주세요" maxlength="10">
-        </div>
-
-        <div class="input-group" style="margin-top: 15px;">
-            <label>> X_TWITTER_URL (OPTIONAL)</label>
-            <input type="text" id="user-x-url" placeholder="https://x.com/아이디">
-        </div>
-
-        <button id="connect-btn" onclick="initializeMultiSession()">CONNECT SYSTEM</button>
+        <div class="user-grid" id="member-grid-target"></div>
         
-        <div class="footer-info" style="justify-content: center;">
-            <span>CREATE MULTI-USER STREAM</span>
+        <div class="footer-info" style="justify-content: center; margin-top: 20px;">
+            <span>SELECT ACCESS PROFILE</span>
         </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        // 🌟 [수정 안내] 각 유저의 name, icon(이모지 혹은 이미지 주소), xUrl을 실제 친구분들 정보로 자유롭게 바꾸세요!
+        const FIXED_USERS = [
+            { userId: "user_me", name: "NYA_PPI", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
+            { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
+            { userId: "user_member3", name: "댕댕이", icon: "🐶", xUrl: "https://x.com" },
+            { userId: "user_member4", name: "삐약이", icon: "🐥", xUrl: "https://x.com" },
+            { userId: "user_member5", name: "햄찌", icon: "🐹", xUrl: "https://x.com" },
+            { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
+        ];
 
-        // 사용자가 발급한 고유 서버 Config 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
-            authDomain: "nya-ppi.firebaseapp.com",
-            projectId: "nya-ppi",
-            storageBucket: "nya-ppi.firebasestorage.app",
-            messagingSenderId: "27439633492",
-            appId: "1:27439633492:web:c60461eb2583b76e62c9c1", // 최신 앱 ID 동기화
-            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com" 
-        };
+        // 하이패스 자동로그인 체크 로직
+        window.addEventListener('load', () => {
+            const savedSession = localStorage.getItem('nya_multi_session');
+            if (savedSession) {
+                document.body.classList.add('fade-out');
+                setTimeout(() => { location.href = "main.html"; }, 500);
+            }
+        });
 
-        const app = initializeApp(firebaseConfig);
-
-        // 로딩 화면 로직 유지
+        // 로딩바 애니메이션 연출
         const messages = ["섹시코테의 머리칼을 빗어주는 중...", "환상의 옷장 정리중...", "엉킨 꼬리털 풀어내는 중...", "놀 준비 완료.", "접속중..."];
         let progress = 0;
         const progressBar = document.getElementById('progress-bar');
@@ -191,35 +198,36 @@
             percentText.innerText = progress + "%";
             const msgIndex = Math.floor((progress / 100) * messages.length);
             if (messages[msgIndex]) statusMsg.innerText = messages[msgIndex];
-        }, 300);
+        }, 200);
 
         function finishLoading() {
             setTimeout(() => {
                 document.getElementById('loading-screen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('login-content').style.display = 'block';
+                    if(!localStorage.getItem('nya_multi_session')) {
+                        document.getElementById('login-content').style.display = 'block';
+                    }
                 }, 1000);
-            }, 500);
+            }, 400);
         }
 
-        // 글로벌 윈도우 스코프에 연결 (HTML 바인딩용)
+        // 패스코드 인증 실행
         window.validateAccess = function() {
             const passField = document.getElementById('passcode');
             const btn = document.getElementById('login-btn');
             const pass = passField.value;
 
-            if(pass === "0517") {
+            if(pass === "0000") {
                 btn.innerText = "ACCESS GRANTED";
                 btn.classList.add('access-granted');
                 
                 setTimeout(() => {
                     document.getElementById('login-content').style.display = 'none';
-                    document.getElementById('user-setup-content').style.display = 'block';
-                    document.getElementById('user-name').focus();
+                    document.getElementById('user-select-content').style.display = 'block';
+                    renderMemberGrid();
                 }, 600);
-            } 
-            else {
+            } else {
                 btn.innerText = "ACCESS DENIED";
                 btn.classList.add('denied');
                 passField.value = "";
@@ -231,49 +239,36 @@
             }
         };
 
-        window.initializeMultiSession = function() {
-            const name = document.getElementById('user-name').value.trim();
-            let xUrl = document.getElementById('user-x-url').value.trim();
+        // 6명 목록 렌더링
+        function renderMemberGrid() {
+            const grid = document.getElementById('member-grid-target');
+            grid.innerHTML = '';
 
-            if (!name) {
-                alert("이름(NICKNAME)을 입력해 주세요!");
-                return;
-            }
+            FIXED_USERS.forEach(user => {
+                const opt = document.createElement('div');
+                opt.className = 'user-option';
+                opt.onclick = () => selectFixedUser(user);
 
-            if (!xUrl) {
-                xUrl = "https://x.com";
-            } else if (!xUrl.startsWith('http://') && !xUrl.startsWith('https://')) {
-                xUrl = 'https://' + xUrl;
-            }
+                const isImg = user.icon.startsWith('http') || user.icon.startsWith('data:image');
+                const avatarHTML = isImg ? `<img src="${user.icon}">` : user.icon;
 
-            // 고유 식별 랜덤 유저 ID 부여
-            const userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                opt.innerHTML = `
+                    <div class="user-avatar">${avatarHTML}</div>
+                    <div class="user-name">${user.name}</div>
+                `;
+                grid.appendChild(opt);
+            });
+        }
 
-            const multiSessionData = {
-                userId: userId,
-                name: name,
-                icon: "👤", // 기본 이모지 아이콘 (메인에서 변경 가능)
-                xUrl: xUrl
-            };
-
-            // 다인원용 세션 키로 로컬스토리지 저장
-            localStorage.setItem('nya_multi_session', JSON.stringify(multiSessionData));
-            
+        // 프로필 클릭 로그인 처리 및 이동
+        function selectFixedUser(userObj) {
+            localStorage.setItem('nya_multi_session', JSON.stringify(userObj));
             document.body.classList.add('fade-out');
-            setTimeout(() => {
-                location.href = "main.html";
-            }, 600);
-        };
+            setTimeout(() => { location.href = "main.html"; }, 600);
+        }
 
-        // 엔터키 연동
         document.getElementById('passcode').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') window.validateAccess();
-        });
-        document.getElementById('user-name').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') window.initializeMultiSession();
-        });
-        document.getElementById('user-x-url').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') window.initializeMultiSession();
         });
     </script>
 </body>
