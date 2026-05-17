@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>안아조요</title>
+    <title>안아조요 // MULTI_LOGIN</title>
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
     
     <style>
@@ -44,11 +44,11 @@
         .loading-text { font-family: var(--font-light); font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 5px; height: 20px; }
 
         /* --- 공통 프레임 스타일 --- */
-        .login-frame, .user-select-frame {
+        .login-frame, .setup-frame {
             display: none;
             position: relative;
             width: 380px;
-            padding: 60px 40px;
+            padding: 50px 40px;
             background-color: rgba(255, 255, 255, 0.95);
             border: 3px solid transparent;
             border-radius: 50px 15px 50px 15px;
@@ -61,6 +61,7 @@
             text-align: center;
             backdrop-filter: blur(15px);
             animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -71,6 +72,19 @@
             text-shadow: 2px 2px 0px #fff;
         }
 
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            color: var(--main-pink);
+            display: block;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
         input {
             width: 100%; background: #fff; border: 2px solid var(--soft-pink);
             border-radius: 15px; padding: 15px; color: var(--main-pink); font-size: 1.1rem;
@@ -78,6 +92,13 @@
             font-family: var(--font-main); transition: 0.3s ease;
         }
         input:focus { border-color: var(--main-pink); box-shadow: 0 0 10px rgba(255, 126, 185, 0.1); }
+        
+        /* 다인원 설정 창 인풋 스타일 조정 */
+        .setup-frame input {
+            font-size: 0.95rem;
+            padding: 12px;
+            font-family: var(--font-light);
+        }
 
         button {
             width: 100%; margin-top: 25px; padding: 18px; background: var(--main-pink);
@@ -96,23 +117,6 @@
             25% { transform: translateX(-10px); }
             75% { transform: translateX(10px); }
         }
-
-        /* --- 사용자 선택 그리드 --- */
-        .user-grid { display: flex; gap: 20px; margin-top: 20px; justify-content: center; }
-        .user-option {
-            flex: 1; padding: 20px 10px; border: 2px solid var(--soft-pink); border-radius: 20px;
-            cursor: pointer; transition: 0.3s; background: #fff;
-            display: flex; flex-direction: column; align-items: center; overflow: hidden;
-        }
-        .user-option:hover { transform: translateY(-5px); border-color: var(--main-pink); background: var(--soft-pink); }
-        
-        .user-avatar { 
-            width: 50px; height: 50px; font-size: 2.5rem; margin-bottom: 10px; 
-            display: flex; align-items: center; justify-content: center; 
-            overflow: hidden; border-radius: 12px;
-        }
-        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .user-name { font-size: 0.8rem; color: var(--main-pink); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .footer-info { margin-top: 30px; font-size: 0.75rem; color: var(--main-pink); display: flex; justify-content: space-between; opacity: 0.7; font-family: var(--font-light); }
     </style>
@@ -137,71 +141,43 @@
         </div>
     </div>
 
-    <div class="user-select-frame" id="user-select-content">
-        <h1 style="font-size: 1.5rem; margin-bottom: 20px;">WHO ARE YOU?</h1>
-        <div class="user-grid">
-            <div class="user-option" onclick="selectUser('other')">
-                <div class="user-avatar" id="icon-other">🐱</div>
-                <div class="user-name" id="name-other">ADMIN</div>
-            </div>
-            <div class="user-option" onclick="selectUser('me')">
-                <div class="user-avatar" id="icon-me">🐰</div>
-                <div class="user-name" id="name-me">NYA_PPI</div>
-            </div>
+    <div class="setup-frame" id="user-setup-content">
+        <h1 style="font-size: 1.8rem; margin-bottom: 30px; letter-spacing: 3px;">USER INITIALIZE</h1>
+        
+        <div class="input-group">
+            <label>> NICKNAME_INPUT</label>
+            <input type="text" id="user-name" placeholder="사용할 닉네임을 적어주세요" maxlength="10">
         </div>
+
+        <div class="input-group" style="margin-top: 15px;">
+            <label>> X_TWITTER_URL (OPTIONAL)</label>
+            <input type="text" id="user-x-url" placeholder="https://x.com/아이디">
+        </div>
+
+        <button id="connect-btn" onclick="initializeMultiSession()">CONNECT SYSTEM</button>
+        
         <div class="footer-info" style="justify-content: center;">
-            <span>SELECT ACCESS PROFILE</span>
+            <span>CREATE MULTI-USER STREAM</span>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
-    <script>
-        // --- Firebase 설정 ---
+        // 사용자가 발급한 고유 서버 Config 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
             projectId: "nya-ppi",
             storageBucket: "nya-ppi.firebasestorage.app",
             messagingSenderId: "27439633492",
-            appId: "1:27439633492:web:1cd43fd32322f6bc62c9c1",
-            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com/" 
+            appId: "1:27439633492:web:c60461eb2583b76e62c9c1", // 최신 앱 ID 동기화
+            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com" 
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const app = initializeApp(firebaseConfig);
 
-        // --- Firebase에서 실시간으로 프로필을 불러오는 로직 (loadProfiles 대체) ---
-        function syncProfiles() {
-            database.ref('user_profiles').on('value', (snapshot) => {
-                const profiles = snapshot.val();
-                if (profiles) {
-                    if (profiles.me) {
-                        document.getElementById('name-me').innerText = profiles.me.name;
-                        renderIcon('icon-me', profiles.me.icon);
-                    }
-                    if (profiles.other) {
-                        document.getElementById('name-other').innerText = profiles.other.name;
-                        renderIcon('icon-other', profiles.other.icon);
-                    }
-                }
-            });
-        }
-
-        function renderIcon(elementId, iconData) {
-            const container = document.getElementById(elementId);
-            const isImage = iconData.startsWith('http') || iconData.startsWith('data:image');
-            if (isImage) {
-                container.innerHTML = `<img src="${iconData}" onerror="this.src='https://via.placeholder.com/50?text=?';">`;
-            } else {
-                container.innerText = iconData;
-            }
-        }
-
-        // 초기 동기화 실행
-        syncProfiles();
-
+        // 로딩 화면 로직 유지
         const messages = ["섹시코테의 머리칼을 빗어주는 중...", "환상의 옷장 정리중...", "엉킨 꼬리털 풀어내는 중...", "놀 준비 완료.", "접속중..."];
         let progress = 0;
         const progressBar = document.getElementById('progress-bar');
@@ -215,7 +191,7 @@
             percentText.innerText = progress + "%";
             const msgIndex = Math.floor((progress / 100) * messages.length);
             if (messages[msgIndex]) statusMsg.innerText = messages[msgIndex];
-        }, 400);
+        }, 300);
 
         function finishLoading() {
             setTimeout(() => {
@@ -227,7 +203,8 @@
             }, 500);
         }
 
-        function validateAccess() {
+        // 글로벌 윈도우 스코프에 연결 (HTML 바인딩용)
+        window.validateAccess = function() {
             const passField = document.getElementById('passcode');
             const btn = document.getElementById('login-btn');
             const pass = passField.value;
@@ -238,7 +215,8 @@
                 
                 setTimeout(() => {
                     document.getElementById('login-content').style.display = 'none';
-                    document.getElementById('user-select-content').style.display = 'block';
+                    document.getElementById('user-setup-content').style.display = 'block';
+                    document.getElementById('user-name').focus();
                 }, 600);
             } 
             else {
@@ -251,28 +229,51 @@
                     btn.innerText = "ENTER SYSTEM";
                 }, 1500);
             }
-        }
+        };
 
-        // --- 수정된 부분: Firebase 최신 데이터를 가져와서 세션 생성 ---
-        function selectUser(type) {
-            database.ref('user_profiles/' + type).once('value').then((snapshot) => {
-                const data = snapshot.val();
-                // 데이터가 있으면 그걸 쓰고, 없으면 원본의 기본값을 사용
-                const sessionData = data ? { type, ...data } : 
-                                   (type === 'me' ? { type: 'me', name: 'USER_NYA', icon: '🐰' } : 
-                                                    { type: 'other', name: 'ADMIN_UNIT', icon: '🐱' });
+        window.initializeMultiSession = function() {
+            const name = document.getElementById('user-name').value.trim();
+            let xUrl = document.getElementById('user-x-url').value.trim();
 
-                localStorage.setItem('nya_current_session', JSON.stringify(sessionData));
-                
-                document.body.classList.add('fade-out');
-                setTimeout(() => {
-                    location.href = "main.html";
-                }, 600);
-            });
-        }
+            if (!name) {
+                alert("이름(NICKNAME)을 입력해 주세요!");
+                return;
+            }
 
+            if (!xUrl) {
+                xUrl = "https://x.com";
+            } else if (!xUrl.startsWith('http://') && !xUrl.startsWith('https://')) {
+                xUrl = 'https://' + xUrl;
+            }
+
+            // 고유 식별 랜덤 유저 ID 부여
+            const userId = 'user_' + Math.random().toString(36).substr(2, 9);
+
+            const multiSessionData = {
+                userId: userId,
+                name: name,
+                icon: "👤", // 기본 이모지 아이콘 (메인에서 변경 가능)
+                xUrl: xUrl
+            };
+
+            // 다인원용 세션 키로 로컬스토리지 저장
+            localStorage.setItem('nya_multi_session', JSON.stringify(multiSessionData));
+            
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                location.href = "main.html";
+            }, 600);
+        };
+
+        // 엔터키 연동
         document.getElementById('passcode').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') validateAccess();
+            if (e.key === 'Enter') window.validateAccess();
+        });
+        document.getElementById('user-name').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') window.initializeMultiSession();
+        });
+        document.getElementById('user-x-url').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') window.initializeMultiSession();
         });
     </script>
 </body>
