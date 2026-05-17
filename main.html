@@ -741,8 +741,8 @@
 
         window.deleteMessage = function(key) { if (confirm("기록을 파기할까요?")) remove(ref(db, `multi_chat_history/${key}`)); };
 
-        // 초기화 세팅
-        document.getElementById('edit-name').value = session.name; 
+        // 🌟 [보정 완료] 초기화 세팅 시 localStorage의 실시간 저장값을 정확하게 input 창에 바인딩
+        document.getElementById('edit-name').value = session.name || ''; 
         document.getElementById('edit-icon').value = session.icon || '';
         document.getElementById('edit-xurl').value = session.xUrl || '';
         renderProfile(); 
@@ -776,7 +776,7 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // 🌟 실시간 다인원 세션 파기용 로그아웃 함수 구현부 (원본 보존 원칙 준수)
+        // 실시간 다인원 세션 파기용 로그아웃 함수 구현부 (원본 보존 원칙 준수)
         window.logout = function() {
             if (confirm("시스템을 종료하고 로그아웃하시겠습니까?")) {
                 localStorage.removeItem('nya_multi_session');
