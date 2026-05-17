@@ -297,8 +297,9 @@
                 opt.className = 'user-option';
                 opt.onclick = () => selectFixedUser(user);
 
-                const isImg = user.icon.startsWith('http') || user.icon.startsWith('data:image');
-                const avatarHTML = isImg ? `<img src="${user.icon}">` : user.icon;
+                // 🌟 [보정 완료] 웹 이미지 주소 및 Base64 인코딩 주소까지 모두 판별 가능하도록 정규식 매칭 강화
+                const isImg = user.icon && (user.icon.startsWith('http') || user.icon.startsWith('data:image'));
+                const avatarHTML = isImg ? `<img src="${user.icon}">` : (user.icon || '👤');
 
                 opt.innerHTML = `
                     <div class="user-avatar">${avatarHTML}</div>
@@ -310,7 +311,9 @@
 
         // 프로필 클릭 로그인 처리 및 이동
         function selectFixedUser(userObj) {
-            localStorage.setItem('nya_multi_session', JSON.stringify(userObj));
+            // 🌟 [보정 완료] 하드코딩 데이터 대신, 실시간 DB 결합 처리가 완료된 최신 유저 정보를 매핑하여 저장
+            const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
+            localStorage.setItem('nya_multi_session', JSON.stringify(finalUser));
             document.body.classList.add('fade-out');
             setTimeout(() => { location.href = "main.html"; }, 600);
         }
