@@ -257,7 +257,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 사용자가 제공한 새로운 Firebase 설정 서버
+        // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
@@ -305,7 +305,7 @@
             }
         });
 
-        // 실시간 전체 접속자 목록 갱신
+        // 🌟 [버그 수정] 실시간 데이터베이스 값 변경 시 내 세션 정보도 즉시 동기화하도록 보정
         onValue(presenceRootRef, (snap) => {
             const users = snap.val() || {};
             const listContainer = document.getElementById('online-users-list');
@@ -314,6 +314,16 @@
 
             const userEntries = Object.entries(users);
             statusDisplay.innerText = `현재 ${userEntries.length}명 접속 중!`;
+
+            // 1. 내 정보가 DB에 있다면 로컬 세션 데이터 변수와 동기화 시켜줌
+            if (users[session.userId]) {
+                const myLatestData = users[session.userId];
+                session.name = myLatestData.name || session.name;
+                session.icon = myLatestData.icon || session.icon;
+                session.xUrl = myLatestData.xUrl || session.xUrl;
+                localStorage.setItem('nya_multi_session', JSON.stringify(session));
+                renderProfile(); // 대시보드 내 이름 텍스트 즉시 갱신
+            }
 
             userEntries.forEach(([uid, udata]) => {
                 const avatar = document.createElement('div');
@@ -325,7 +335,6 @@
                 avatar.innerHTML = isImage ? `<img src="${udata.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : (udata.icon || '👤');
                 avatar.innerHTML += `<div class="user-tooltip">${udata.name}</div>`;
                 
-                // 유저 아바타를 누르면 해당 유저가 등록한 X 주소로 연결
                 avatar.onclick = () => {
                     window.playSystemSound();
                     if(udata.xUrl) {
@@ -541,7 +550,6 @@
             document.getElementById('modal-img').src = diaryData.image;
             document.getElementById('modal-text').innerText = diaryData.text;
             
-            // 본인이 쓴 글만 편집 버튼이 노출되도록 보정
             const editBtn = document.getElementById('btn-edit-trigger');
             if (diaryAuthor === session.userId) {
                 editBtn.style.display = 'block';
@@ -692,23 +700,31 @@
             } catch (e) {}
         };
 
+        // 🌟 [프로필 저장 로직 강화] 로컬 변수를 즉시 바꾸고 변경사항을 파이어베이스에 송신
         window.updateProfile = function() {
             const nameVal = document.getElementById('edit-name').value.trim(); 
             const iconVal = document.getElementById('edit-icon').value.trim();
             const xurlVal = document.getElementById('edit-xurl').value.trim();
+            
             if(nameVal) session.name = nameVal; 
             if(iconVal) session.icon = iconVal;
             if(xurlVal) session.xUrl = xurlVal;
+            
             localStorage.setItem('nya_multi_session', JSON.stringify(session)); 
             renderProfile();
             
-            // 파이어베이스 데이터베이스 정보 업데이트 동기화
-            update(myPresenceRef, { name: session.name, icon: session.icon, xUrl: session.xUrl });
+            update(myPresenceRef, { 
+                name: session.name, 
+                icon: session.icon, 
+                xUrl: session.xUrl 
+            }).then(() => {
+                window.systemLog("PROFILE_SYNCED_TO_FIREBASE");
+            });
         };
 
         function renderProfile() {
             const nameBox = document.getElementById('session-name');
-            nameBox.innerText = session.name || "Unknown";
+            if (nameBox) nameBox.innerText = session.name || "Unknown";
         }
 
         window.closeChatImage = function() {
@@ -741,7 +757,7 @@
 
         window.deleteMessage = function(key) { if (confirm("기록을 파기할까요?")) remove(ref(db, `multi_chat_history/${key}`)); };
 
-        // 🌟 [보정 완료] 초기화 세팅 시 localStorage의 실시간 저장값을 정확하게 input 창에 바인딩
+        // 초기 바인딩부 세팅
         document.getElementById('edit-name').value = session.name || ''; 
         document.getElementById('edit-icon').value = session.icon || '';
         document.getElementById('edit-xurl').value = session.xUrl || '';
@@ -776,7 +792,6 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // 실시간 다인원 세션 파기용 로그아웃 함수 구현부 (원본 보존 원칙 준수)
         window.logout = function() {
             if (confirm("시스템을 종료하고 로그아웃하시겠습니까?")) {
                 localStorage.removeItem('nya_multi_session');
