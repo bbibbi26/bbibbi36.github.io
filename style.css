@@ -1,30 +1,30 @@
-/* [원본 스타일 유지 및 강화] */
+/* [원본 스타일 유지 및 강화 - 흰색 & 파란색 테마 변환] */
 :root {
-    --main-pink: #ff7eb9;
-    --main-purple: #9d00ff;
-    --dark-bg: #050508;
-    --panel-bg: rgba(15, 15, 25, 0.9);
-    --bubble-me: rgba(255, 126, 185, 0.25);
-    --bubble-other: rgba(255, 255, 255, 0.1);
-    --accent-blue: #00f3ff;
+    --main-pink: #0076ff;       /* 메인 포인트 블루 (기존 핑크 대체) */
+    --main-purple: #00d2ff;     /* 서브 스카이 블루 (기존 퍼플 대체) */
+    --dark-bg: #f4f7f6;         /* 기본 라이트 배경 */
+    --panel-bg: rgba(255, 255, 255, 0.85); /* 투명한 화이트 패널 배경 */
+    --bubble-me: rgba(0, 118, 255, 0.15);  /* 내 말풍선: 연한 블루 */
+    --bubble-other: rgba(0, 0, 0, 0.06);   /* 상대방 말풍선: 연한 그레이 */
+    --accent-blue: #0055ff;     /* 딥 블루 강조색 */
     --font-main: 'GmarketSansBold', sans-serif;
     --font-light: 'GmarketSansLight', sans-serif;
     /* 추가된 화사한 테마 변수 */
-    --cal-bg: rgba(255, 255, 255, 0.05);
-    --cal-border: rgba(255, 255, 255, 0.15);
-    --cal-filled: rgba(255, 126, 185, 0.15);
+    --cal-bg: rgba(0, 0, 0, 0.02);
+    --cal-border: rgba(0, 118, 255, 0.15);
+    --cal-filled: rgba(0, 118, 255, 0.08);
 }
 
 body {
-    background-color: #fce4ec;
+    background-color: #e3f2fd;
     background-image: 
-        radial-gradient(circle at 20% 30%, rgba(112, 214, 255, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(255, 126, 185, 0.15) 0%, transparent 50%),
-        linear-gradient(135deg, #f5f7fa 0%, #ffe4f1 50%, #e0f7ff 100%),
-        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+        radial-gradient(circle at 20% 30%, rgba(0, 210, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(0, 118, 255, 0.15) 0%, transparent 50%),
+        linear-gradient(135deg, #ffffff 0%, #e3f2fd 50%, #ccfffe 100%),
+        linear-gradient(rgba(0, 118, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 118, 255, 0.08) 1px, transparent 1px);
     background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-    color: #fff; font-family: var(--font-main);
+    color: #222; font-family: var(--font-main);
     margin: 0; display: flex; justify-content: center; align-items: center;
     min-height: 100vh; overflow: hidden;
 }
@@ -32,7 +32,7 @@ body {
 #system-log-bg {
     position: fixed; bottom: 15px; left: 15px;
     font-family: 'Courier New', monospace; font-size: 10px;
-    color: var(--main-pink); opacity: 0.4;
+    color: var(--main-pink); opacity: 0.5;
     pointer-events: none; z-index: 1; line-height: 1.4;
 }
 
@@ -40,7 +40,7 @@ body {
     width: 90vw; height: 85vh;
     max-width: 1100px;
     position: relative; z-index: 10;
-    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 20px 40px rgba(0, 50, 150, 0.15));
     animation: terminalScanOpen 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
 }
 
@@ -49,7 +49,7 @@ body {
     position: absolute; top: -35px; left: 0;
     width: 200px; height: 40px;
     background: var(--panel-bg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 118, 255, 0.15);
     border-bottom: none;
     border-radius: 15px 15px 0 0;
     display: flex; align-items: center; justify-content: center;
@@ -60,7 +60,7 @@ body {
 .content-wrapper {
     width: 100%; height: 100%;
     background: var(--panel-bg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 118, 255, 0.15);
     border-radius: 0 30px 30px 30px;
     backdrop-filter: blur(25px);
     display: flex; overflow: hidden;
@@ -72,38 +72,40 @@ body {
 }
 
 .sidebar {
-    width: 240px; border-right: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex; flex-direction: column; padding: 25px; background: rgba(0, 0, 0, 0.2);
+    width: 240px; border-right: 1px solid rgba(0, 118, 255, 0.08);
+    display: flex; flex-direction: column; padding: 25px; background: rgba(255, 255, 255, 0.4);
     overflow-y: auto;
 }
 
 #session-icon { 
     width:55px; height:55px; margin-bottom:15px; border-radius:12px; 
     display:flex; align-items:center; justify-content:center; font-size:1.3rem; 
-    overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    overflow: hidden; box-shadow: 0 0 15px rgba(0, 118, 255, 0.15);
+    background: #fff;
 }
 
 #session-name { margin: 0; font-size: 0.9rem; color: var(--main-pink); }
 
 .menu-item {
     cursor: pointer; transition: 0.2s; display: inline-block; width: 100%;
+    color: #444;
 }
 .menu-item:hover {
-    color: var(--accent-blue); text-shadow: 0 0 8px var(--accent-blue); transform: translateX(5px);
+    color: var(--accent-blue); text-shadow: 0 0 8px rgba(0, 85, 255, 0.3); transform: translateX(5px);
 }
 
 .settings-panel {
-    margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(0, 118, 255, 0.08);
 }
-.settings-title { font-size: 0.6rem; color: var(--accent-blue); margin-bottom: 10px; opacity: 0.6; }
+.settings-title { font-size: 0.6rem; color: var(--accent-blue); margin-bottom: 10px; opacity: 0.8; }
 .setting-input {
-    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px; padding: 6px 8px; color: #fff; font-size: 0.7rem; font-family: var(--font-light);
+    width: 100%; background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 118, 255, 0.15);
+    border-radius: 6px; padding: 6px 8px; color: #222; font-size: 0.7rem; font-family: var(--font-light);
     margin-bottom: 8px; outline: none; box-sizing: border-box;
 }
-.setting-input:focus { border-color: var(--main-pink); }
+.setting-input:focus { border-color: var(--main-pink); background: #fff; }
 
-.music-section { margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+.music-section { margin-top: 20px; border-top: 1px solid rgba(0, 118, 255, 0.08); padding-top: 15px; }
 
 .arrow-player {
     display: flex; align-items: center; width: 100%; height: 50px; position: relative; margin-bottom: 10px;
@@ -123,7 +125,7 @@ body {
 .arrow-shaft-container {
     flex: 1; height: 30px; display: flex; align-items: center; cursor: pointer; position: relative; margin: 0 5px;
 }
-.arrow-shaft-bg { width: 100%; height: 1.5px; background: rgba(255, 255, 255, 0.15); position: relative; }
+.arrow-shaft-bg { width: 100%; height: 1.5px; background: rgba(0, 0, 0, 0.1); position: relative; }
 .arrow-shaft-fill { 
     height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-blue), var(--main-pink)); 
     position: relative; transition: width 0.1s linear; 
@@ -134,6 +136,7 @@ body {
     position: absolute; right: -3px; top: 50%;
     transform: translateY(-50%);
     box-shadow: 0 0 8px var(--main-pink);
+    border: 1px solid var(--main-pink);
 }
 
 .arrow-point-heart {
@@ -156,9 +159,9 @@ body {
 }
 
 .volume-container { display: flex; flex-direction: column; gap: 6px; }
-.volume-label { font-size: 0.55rem; color: rgba(255, 255, 255, 0.4); display: flex; justify-content: space-between; }
+.volume-label { font-size: 0.55rem; color: rgba(0, 0, 0, 0.4); display: flex; justify-content: space-between; }
 #volume-range {
-    -webkit-appearance: none; width: 100%; height: 2px; background: rgba(0, 243, 255, 0.2);
+    -webkit-appearance: none; width: 100%; height: 2px; background: rgba(0, 118, 255, 0.2);
     outline: none; cursor: pointer;
 }
 #volume-range::-webkit-slider-thumb {
@@ -168,7 +171,7 @@ body {
 
 .main-content { flex: 1; display: flex; flex-direction: column; padding: 30px 40px; overflow: hidden; position: relative; }
 .system-board { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
-.board-header { font-size: 0.65rem; color: var(--main-pink); margin-bottom: 10px; opacity: 0.7; }
+.board-header { font-size: 0.65rem; color: var(--main-pink); margin-bottom: 10px; opacity: 0.8; }
 
 .post-list { 
     flex: 1; list-style: none; padding: 10px; margin: 0; overflow-y: auto; 
@@ -177,30 +180,30 @@ body {
 
 .post-item {
     max-width: 75%; padding: 12px 16px; position: relative;
-    animation: popIn 0.3s ease-out both; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: popIn 0.3s ease-out both; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .post-item.other {
     align-self: flex-start; background: var(--bubble-other);
-    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0 15px 15px 15px;
+    border: 1px solid rgba(0, 0, 0, 0.05); border-radius: 0 15px 15px 15px;
 }
 .post-item.other::after {
     content: ''; position: absolute; left: -8px; top: 0;
-    border-right: 8px solid rgba(255, 255, 255, 0.1); border-bottom: 8px solid transparent;
+    border-right: 8px solid rgba(0, 0, 0, 0.05); border-bottom: 8px solid transparent;
 }
 
 .post-item.me {
     align-self: flex-end; background: var(--bubble-me);
-    border: 1px solid rgba(255, 126, 185, 0.3); border-radius: 15px 0 15px 15px;
+    border: 1px solid rgba(0, 118, 255, 0.2); border-radius: 15px 0 15px 15px;
 }
 .post-item.me::after {
     content: ''; position: absolute; right: -8px; top: 0;
-    border-left: 8px solid rgba(255, 126, 185, 0.2); border-bottom: 8px solid transparent;
+    border-left: 8px solid rgba(0, 118, 255, 0.15); border-bottom: 8px solid transparent;
 }
 
 .delete-btn {
     position: absolute; top: -5px; right: -5px;
-    width: 18px; height: 18px; background: #050508;
+    width: 18px; height: 18px; background: #fff;
     border: 1px solid var(--main-pink); color: var(--main-pink);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-size: 9px; cursor: pointer; opacity: 0; transition: 0.2s; z-index: 10;
@@ -210,31 +213,32 @@ body {
 
 .post-sender { font-size: 0.65rem; font-weight: bold; margin-bottom: 4px; color: var(--accent-blue); }
 .me .post-sender { text-align: right; color: var(--main-pink); }
-.post-text { font-family: var(--font-light); font-size: 0.9rem; color: #eee; line-height: 1.4; word-break: break-all; }
-.post-text img { max-width: 100%; border-radius: 10px; margin-top: 8px; display: block; border: 1px solid rgba(255,255,255,0.1); }
-.post-info { display: flex; justify-content: flex-end; margin-top: 5px; font-size: 0.6rem; color: rgba(255, 255, 255, 0.3); }
+.post-text { font-family: var(--font-light); font-size: 0.9rem; color: #333; line-height: 1.4; word-break: break-all; }
+.post-text img { max-width: 100%; border-radius: 10px; margin-top: 8px; display: block; border: 1px solid rgba(0,118,255,0.1); }
+.post-info { display: flex; justify-content: flex-end; margin-top: 5px; font-size: 0.6rem; color: rgba(0, 0, 0, 0.3); }
 .other .post-info { justify-content: flex-start; }
 
 .input-area { display: flex; gap: 10px; margin-top: 15px; padding-bottom: 5px; }
 #comment-input {
-    flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px; padding: 12px; color: #fff; font-family: var(--font-light); outline: none;
+    flex: 1; background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0, 118, 255, 0.15);
+    border-radius: 12px; padding: 12px; color: #222; font-family: var(--font-light); outline: none;
 }
+#comment-input:focus { background: #fff; border-color: var(--main-pink); }
 .save-btn {
     background: linear-gradient(135deg, var(--main-pink), var(--main-purple));
     border: none; color: #fff; padding: 0 20px; border-radius: 12px;
     cursor: pointer; font-family: var(--font-main); font-size: 0.75rem;
     transition: 0.3s;
 }
-.save-btn:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--main-pink); }
+.save-btn:hover { filter: brightness(1.1); box-shadow: 0 0 15px rgba(0, 118, 255, 0.3); }
 
-.disconnect-btn { margin-top: 10px; font-size: 0.65rem; color: rgba(255,255,255,0.2); cursor: pointer; text-align: right; }
+.disconnect-btn { margin-top: 10px; font-size: 0.65rem; color: rgba(0,0,0,0.3); cursor: pointer; text-align: right; }
 .post-list::-webkit-scrollbar { width: 4px; }
-.post-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+.post-list::-webkit-scrollbar-thumb { background: rgba(0,118,255,0.15); border-radius: 10px; }
 
 #boot-loader {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #050508; z-index: 9999; display: flex;
+    background: #ffffff; z-index: 9999; display: flex;
     justify-content: center; align-items: center;
     font-family: 'Courier New', monospace; color: var(--main-pink);
     transition: opacity 0.5s ease;
@@ -245,14 +249,14 @@ body {
 /* [개선된 캘린더 스타일 - 화사한 버전] */
 #diary-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(25, 25, 35, 0.95); z-index: 100; display: none;
+    background: rgba(255, 255, 255, 0.96); z-index: 100; display: none;
     flex-direction: column; padding: 30px; box-sizing: border-box;
     backdrop-filter: blur(15px); animation: popIn 0.3s ease-out;
 }
 .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .calendar-nav { display: flex; align-items: center; gap: 15px; color: var(--accent-blue); font-size: 0.8rem; }
-.nav-btn { cursor: pointer; padding: 5px 10px; background: rgba(255,255,255,0.1); border-radius: 5px; transition: 0.2s; }
-.nav-btn:hover { background: var(--accent-blue); color: #000; }
+.nav-btn { cursor: pointer; padding: 5px 10px; background: rgba(0,118,255,0.08); border-radius: 5px; transition: 0.2s; color: var(--accent-blue); }
+.nav-btn:hover { background: var(--accent-blue); color: #fff; }
 
 .diary-grid { 
     display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; 
@@ -267,88 +271,89 @@ body {
     overflow: hidden;
 }
 .diary-cell:hover { 
-    border-color: var(--accent-blue); background: rgba(0, 243, 255, 0.1); 
+    border-color: var(--accent-blue); background: rgba(0, 118, 255, 0.08); 
     transform: scale(1.02); z-index: 2;
 }
-.diary-cell.today { border-color: var(--accent-blue); border-width: 2px; background: rgba(0, 243, 255, 0.05); }
+.diary-cell.today { border-color: var(--accent-blue); border-width: 2px; background: rgba(0, 118, 255, 0.03); }
 .diary-cell.filled { border-color: var(--main-pink); background: var(--cal-filled); }
-.diary-cell .day-num { font-size: 0.75rem; font-weight: bold; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
-.diary-cell.today .day-num { color: var(--accent-blue); text-shadow: 0 0 5px var(--accent-blue); }
+.diary-cell .day-num { font-size: 0.75rem; font-weight: bold; color: rgba(0,0,0,0.4); margin-bottom: 4px; }
+.diary-cell.today .day-num { color: var(--accent-blue); text-shadow: 0 0 5px rgba(0, 85, 255, 0.2); }
 .diary-cell .preview-img { 
     width: 100%; height: 65px; object-fit: cover; border-radius: 6px; 
-    margin-top: auto; filter: brightness(0.8); transition: 0.3s; 
+    margin-top: auto; filter: brightness(0.9); transition: 0.3s; 
 }
 .diary-cell:hover .preview-img { filter: brightness(1); }
 .diary-cell .preview-text { 
-    font-size: 0.6rem; color: #fff; margin-top: 4px; 
+    font-size: 0.6rem; color: #222; margin-top: 4px; 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-light); 
 }
 
 #diary-write-modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); z-index: 300; display: none;
+    background: rgba(0, 0, 0, 0.4); z-index: 300; display: none;
     align-items: center; justify-content: center; backdrop-filter: blur(8px);
 }
 .write-box {
-    background: var(--panel-bg); border: 1px solid var(--main-pink);
+    background: #fff; border: 1px solid var(--main-pink);
     width: 90%; max-width: 480px; padding: 30px; border-radius: 25px;
-    box-shadow: 0 0 30px rgba(255, 126, 185, 0.2);
+    box-shadow: 0 0 30px rgba(0, 118, 255, 0.15);
     animation: popIn 0.3s ease-out;
 }
 .write-box h4 { margin-top: 0; font-size: 0.8rem; color: var(--main-pink); letter-spacing: 1px; }
 
 #diary-preview-area {
-    width: 100%; height: 220px; background: rgba(255,255,255,0.03);
-    border: 2px dashed rgba(255, 126, 185, 0.3); border-radius: 15px;
+    width: 100%; height: 220px; background: rgba(0,0,0,0.02);
+    border: 2px dashed rgba(0, 118, 255, 0.2); border-radius: 15px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; overflow: hidden; margin-bottom: 20px; transition: 0.3s;
 }
-#diary-preview-area:hover { border-color: var(--main-pink); background: rgba(255, 126, 185, 0.05); }
-#preview-placeholder { font-size: 0.7rem; color: rgba(255,255,255,0.3); font-family: var(--font-light); }
+#diary-preview-area:hover { border-color: var(--main-pink); background: rgba(0, 118, 255, 0.03); }
+#preview-placeholder { font-size: 0.7rem; color: rgba(0,0,0,0.4); font-family: var(--font-light); }
 
 #diary-text-input {
-    width: 100%; height: 80px; background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
-    padding: 15px; color: #fff; font-family: var(--font-light); font-size: 0.85rem;
+    width: 100%; height: 80px; background: rgba(0,0,0,0.02);
+    border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
+    padding: 15px; color: #222; font-family: var(--font-light); font-size: 0.85rem;
     resize: none; outline: none; box-sizing: border-box; margin-bottom: 20px;
     transition: 0.3s;
 }
-#diary-text-input:focus { border-color: var(--main-pink); background: rgba(255,126,185,0.05); }
+#diary-text-input:focus { border-color: var(--main-pink); background: #fff; }
 
 .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn-cancel, .btn-save, .btn-delete {
     flex: 1; padding: 12px; border-radius: 10px; font-family: var(--font-main);
     font-size: 0.7rem; cursor: pointer; transition: 0.3s; border: none; min-width: 80px;
 }
-.btn-cancel { background: rgba(255,255,255,0.05); color: #ccc; }
-.btn-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.btn-cancel { background: rgba(0,0,0,0.05); color: #666; }
+.btn-cancel:hover { background: rgba(0,0,0,0.08); color: #222; }
 .btn-save { background: linear-gradient(135deg, var(--main-pink), var(--main-purple)); color: #fff; }
-.btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 126, 185, 0.3); }
+.btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 118, 255, 0.2); }
 .btn-delete { background: #ff4b4b; color: #fff; flex: 0 0 auto; width: 100%; margin-top: 5px; display: none; }
 .btn-delete:hover { background: #ff0000; }
 
 .modal-box {
-    background: var(--panel-bg); border: 1px solid var(--main-pink);
+    background: #fff; border: 1px solid var(--main-pink);
     width: 90%; max-width: 800px; padding: 30px; border-radius: 25px; 
     display: flex; gap: 25px; text-align: left; animation: popIn 0.3s ease-out;
+    box-shadow: 0 10px 40px rgba(0,118,255,0.1);
 }
 .modal-left { flex: 1.3; }
 .modal-right { 
-    flex: 1; border-left: 1px solid rgba(255,255,255,0.05); 
+    flex: 1; border-left: 1px solid rgba(0,0,0,0.05); 
     padding-left: 25px; display: flex; flex-direction: column; 
 }
 .diary-comment-list { flex: 1; overflow-y: auto; margin-bottom: 15px; font-size: 0.75rem; padding-right: 5px; }
 .diary-comment-item { 
-    margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.03); 
+    margin-bottom: 12px; padding: 10px; background: rgba(0,0,0,0.02); 
     border-radius: 8px; animation: popIn 0.3s ease-out;
 }
 .diary-comment-sender { font-weight: bold; color: var(--main-pink); margin-bottom: 3px; display: block; font-size: 0.65rem; }
-.diary-comment-text { font-family: var(--font-light); color: #eee; line-height: 1.4; }
+.diary-comment-text { font-family: var(--font-light); color: #444; line-height: 1.4; }
 
-.diary-comment-input-wrap { display: flex; gap: 8px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 10px; }
+.diary-comment-input-wrap { display: flex; gap: 8px; background: rgba(0,0,0,0.03); padding: 5px; border-radius: 10px; border: 1px solid rgba(0,118,255,0.1); }
 .diary-comment-input { 
     flex: 1; background: transparent; border: none;
-    color: #fff; padding: 8px 12px; font-size: 0.75rem; outline: none; font-family: var(--font-light);
+    color: #222; padding: 8px 12px; font-size: 0.75rem; outline: none; font-family: var(--font-light);
 }
 
 /* [스티커 컨테이너 - 메인 박스를 덮는 팝업 형태] */
@@ -361,10 +366,10 @@ body {
     height: 95vh !important; 
     display: none; 
     z-index: 10000 !important; /* 최상단으로 올림 */
-    background: rgba(15, 15, 25, 0.98); /* 배경을 조금 더 불투명하게 */
+    background: rgba(255, 255, 255, 0.98); /* 배경을 조금 더 불투명하게 */
     border: 2px solid var(--main-pink);
     border-radius: 24px;
-    box-shadow: 0 0 100px rgba(0,0,0,0.9);
+    box-shadow: 0 0 100px rgba(0, 50, 150, 0.15);
     backdrop-filter: blur(40px);
     overflow: hidden;
     flex-direction: column;
@@ -382,8 +387,8 @@ body {
     justify-content: space-between;
     width: 100%;
     height: 40px; /* 높이를 조금 줄여서 더 슬림하게 */
-    background: rgba(255, 126, 185, 0.1);
-    border-bottom: 1px solid rgba(255, 126, 185, 0.2);
+    background: rgba(0, 118, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 118, 255, 0.15);
     padding: 0 15px;
     box-sizing: border-box;
     flex-shrink: 0;
@@ -392,7 +397,7 @@ body {
 .header-title {
     font-size: 0.7rem;
     color: var(--main-pink);
-    opacity: 0.8;
+    opacity: 0.9;
     font-family: var(--font-main);
     display: flex;
     align-items: center;
@@ -403,9 +408,9 @@ body {
 .tool-btn {
     font-size: 9px;
     padding: 3px 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 126, 185, 0.3);
-    color: #fff;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 118, 255, 0.3);
+    color: #444;
     cursor: pointer;
     border-radius: 4px;
     font-family: var(--font-main);
@@ -413,14 +418,14 @@ body {
 }
 
 .tool-btn:hover {
-    background: rgba(255, 126, 185, 0.2);
+    background: rgba(0, 118, 255, 0.1);
 }
 
 .tool-btn.active {
     background: var(--main-pink);
     color: #fff;
     border-color: #fff;
-    box-shadow: 0 0 10px var(--main-pink);
+    box-shadow: 0 0 10px rgba(0, 118, 255, 0.3);
 }
 
 /* [CLOSE_X] 버튼 디자인 */
@@ -429,9 +434,9 @@ body {
     color: var(--main-pink);
     cursor: pointer;
     padding: 2px 8px;
-    border: 1px solid rgba(255, 126, 185, 0.3);
+    border: 1px solid rgba(0, 118, 255, 0.3);
     border-radius: 4px;
-    background: rgba(0, 0, 0, 0.3);
+    background: #fff;
     transition: all 0.2s ease;
 }
 
@@ -448,7 +453,7 @@ body {
     height: 100%; /* 부모 높이를 꽉 채움 */
     overflow: auto; /* 스크롤 활성화 */
     position: relative;
-    background: rgba(255, 255, 255, 0.02); /* 영역 확인용 미세한 배경색 */
+    background: rgba(0, 118, 255, 0.01); /* 영역 확인용 미세한 배경색 */
 }
 
 #sticker-area {
@@ -456,7 +461,7 @@ body {
     height: 4000px; 
     position: relative;
     background-image: 
-        radial-gradient(rgba(255,255,255,0.05) 1.5px, transparent 1.5px);
+        radial-gradient(rgba(0, 118, 255, 0.05) 1.5px, transparent 1.5px);
     background-size: 50px 50px; 
 }
 
@@ -483,7 +488,7 @@ body {
 .sticker img { 
     width: 100%; 
     border-radius: 10px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
     border: 2px solid transparent; 
     pointer-events: none; 
     transition: border 0.3s ease;
@@ -491,7 +496,7 @@ body {
 
 /* [마우스를 올렸을 때(Hover) 이미지 외곽선 표시] */
 .sticker:hover img { 
-    border: 2px solid #fff; 
+    border: 2px solid var(--main-pink); 
     transform: scale(1.02);
 }
 
@@ -535,8 +540,8 @@ body {
 #sticker-area-wrapper::-webkit-scrollbar-thumb {
     background: var(--main-pink);
     border-radius: 10px;
-    border: 3px solid rgba(15, 15, 25, 1);
+    border: 3px solid #fff;
 }
 #sticker-area-wrapper::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.05);
 }
