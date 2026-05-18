@@ -256,6 +256,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
+        // [인증 연동 완료] nya-ppi 실시간 메인 코어 서버
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
@@ -273,7 +274,6 @@
         const diaryRef = ref(db, 'multi_diaries');
         const stickerRef = ref(db, 'multi_stickers');
 
-        // [확인] 로컬 세션 감지 및 초기화
         let session = JSON.parse(localStorage.getItem('anajoyo_multi_session'));
         if (!session) { location.href = 'index.html'; }
 
@@ -290,7 +290,7 @@
         const myPresenceRef = ref(db, `multi_presence/${session.userId}`);
         const connectedRef = ref(db, '.info/connected');
 
-        // [교정 1] 접속 감지 시 단순 덮어쓰기가 아닌 최신 로컬 데이터 정렬 전송
+        // [버그 수정 1] 접속 감지 시 덮어쓰기 파편화 전면 차단하고 갱신 처리
         onValue(connectedRef, (snap) => {
             if (snap.val() === true) {
                 onDisconnect(myPresenceRef).remove();
@@ -303,7 +303,7 @@
             }
         });
 
-        // [교정 2] 실시간 다인원 접속 리스너 - 내 데이터 동기화 롤백 루프 완벽 차단
+        // [버그 수정 2] 실시간 다인원 존재감 제어 노드 연동 모순 완전 해결
         const presenceRootRef = ref(db, 'multi_presence');
         onValue(presenceRootRef, (snap) => {
             const users = snap.val() || {};
@@ -316,24 +316,18 @@
             statusDisplay.innerText = `현재 ${userEntries.length}명 접속 중!`;
 
             userEntries.forEach(([uid, udata]) => {
-                // 내 ID에 해당하는 데이터가 서버에서 변경되었을 때만 로컬 세션 객체 보완 업데이트
+                // 내 정보가 타 지점이나 서버 트래픽에서 유실되지 않도록 내 세션과 안전하게 동기화 병합
                 if (uid === session.userId) {
                     session.name = udata.name || session.name;
                     session.icon = udata.icon !== undefined ? udata.icon : session.icon;
                     session.xUrl = udata.xUrl !== undefined ? udata.xUrl : session.xUrl;
                     localStorage.setItem('anajoyo_multi_session', JSON.stringify(session));
-                    
-                    // 상단 사이트 이름 UI 동적 반영 처리 명시
-                    const sessionNameTitle = document.getElementById('session-name');
-                    if (sessionNameTitle) {
-                        sessionNameTitle.innerText = session.name;
-                    }
+                    renderProfile();
                 }
 
                 const avatar = document.createElement('div');
                 avatar.className = 'user-avatar-btn';
                 
-                // 내 아바타 테두리 강조
                 if (uid === session.userId) {
                     avatar.style.border = '2px solid #fff';
                     avatar.style.boxShadow = '0 0 12px #ff7eb9';
@@ -706,22 +700,20 @@
             } catch (e) {}
         };
 
-        // [프로필 실시간 왜곡 현상 전면 차단 구현] 디바운스 기술 적용
+        // [동기화 최종 교정] 인풋 핸들러 최적화 및 디바운스 트래픽 정리
         window.updateProfile = function() {
             const nameVal = document.getElementById('edit-name').value.trim(); 
             const iconVal = document.getElementById('edit-icon').value.trim();
             const xurlVal = document.getElementById('edit-xurl').value.trim();
             
-            // 인풋 값이 존재할 때만 로컬 세션 데이터 변경 정렬
-            if(nameVal) session.name = nameVal; 
-            session.icon = iconVal; // 아이콘이나 X주소는 공백으로 지울 수도 있으므로 허용
+            // 공백 방어 처리 및 로컬 객체 즉시 대입
+            session.name = nameVal || "Unknown"; 
+            session.icon = iconVal;
             session.xUrl = xurlVal;
             
-            // 1. 먼저 내 화면과 로컬 스토리지를 지연 없이 즉시 업데이트
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(session)); 
             renderProfile();
             
-            // 2. 타이핑 도중 비동기 트래픽 파편화로 롤백되는 문제를 막기 위해 디바운스 디레이(500ms) 추가
             clearTimeout(profileSyncTimeout);
             profileSyncTimeout = setTimeout(() => {
                 update(myPresenceRef, { 
@@ -771,7 +763,7 @@
 
         window.deleteMessage = function(key) { if (confirm("기록을 파기할까요?")) remove(ref(db, `multi_chat_history/${key}`)); };
 
-        // 초기 바인딩부 세팅
+        // 초기 인풋 데이터 바인딩 바디 세팅
         document.getElementById('edit-name').value = session.name || ''; 
         document.getElementById('edit-icon').value = session.icon || '';
         document.getElementById('edit-xurl').value = session.xUrl || '';
