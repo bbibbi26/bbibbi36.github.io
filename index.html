@@ -204,17 +204,17 @@
         </div>
     </div>
 
- <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 🌟 파이어베이스 인프라 주소를 anajoyo 핵심 주소로 완벽하게 정렬했습니다.
+        // 🌟 nya-ppi 공식 인증 설정값 매핑 완료
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
-            authDomain: "anajoyo.firebaseapp.com",
-            databaseURL: "https://anajoyo-default-rtdb.firebaseio.com",
-            projectId: "anajoyo",
-            storageBucket: "anajoyo.firebasestorage.app",
+            authDomain: "nya-ppi.firebaseapp.com",
+            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com",
+            projectId: "nya-ppi",
+            storageBucket: "nya-ppi.firebasestorage.app",
             messagingSenderId: "27439633492",
             appId: "1:27439633492:web:30be0dd3c47ae75562c9c1"
         };
@@ -223,6 +223,7 @@
         const db = getDatabase(app);
         const presenceRootRef = ref(db, 'multi_presence');
 
+        // 사이트 전용 기본 고정 유저 라인업 (닉네임 기본값: ANAJOYO)
         let FIXED_USERS = [
             { userId: "user_me", name: "ANAJOYO", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
@@ -232,7 +233,7 @@
             { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
         ];
 
-        // Realtime DB에서 변경 사항이 감지되면 실시간으로 FIXED_USERS 배열 갱신
+        // 파이어베이스 Realtime DB 감시 스레드
         onValue(presenceRootRef, (snap) => {
             const liveUsers = snap.val() || {};
             FIXED_USERS = FIXED_USERS.map(user => {
@@ -247,7 +248,7 @@
                 return user;
             });
 
-            // 자동 로그인 유저 최신화
+            // 자동 로그인 정보 동기화 처리 구문
             const currentSessionStr = localStorage.getItem('anajoyo_multi_session');
             if (currentSessionStr) {
                 try {
@@ -377,6 +378,7 @@
             });
         }
 
+        // 선택 즉시 구 데이터가 인젝션되지 않도록 실시간 최종 병합 배열에서 추출 저장
         function selectFixedUser(userObj) {
             const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(finalUser));
