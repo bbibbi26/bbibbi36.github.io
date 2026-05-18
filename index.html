@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>안아조요 // BLUE_6_LOGIN</title>
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
-    
     <style>
         :root {
             --bg-dark: #0a0e17;
@@ -186,7 +185,7 @@
     <div class="login-frame" id="login-content">
         <h1>안아조요</h1>
         <input type="password" id="passcode" placeholder="PASSCODE_REQUIRED">
-        <button id="login-btn" onclick="validateAccess()">ENTER SYSTEM</button>
+        <button id="login-btn" onclick="window.validateAccess()">ENTER SYSTEM</button>
         <div class="footer-info">
             <span>UNIT: ANAJOYO</span>
             <span>SECURE_MODE: ON</span>
@@ -204,9 +203,8 @@
     </div>
 
     <script type="module">
-        // 🌟 [교정 완료] 임포트할 때 대기 화면에 필요한 필수 파이어베이스 라이브러리 규격을 온전하게 선언했습니다.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
@@ -374,7 +372,6 @@
             });
         }
 
-        // 🌟 [글로벌 마감] 모듈 스코프에서 분리하여 어디서나 완벽하게 연동을 가로채 세션에 안착시키도록 수정했습니다.
         window.selectFixedUser = function(userObj) {
             const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(finalUser));
