@@ -701,10 +701,22 @@
         window.playSystemSound = function() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
-                oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(850, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
-                oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
+                const oscillator = audioCtx.createOscillator(); 
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'triangle'; // 조금 더 부드러운 아날로그 질감
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                // 🌟 주파수를 순식간에 600에서 1100으로 올려서 '뿅' 소리를 만듦
+                oscillator.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.08);
+                
+                gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
+                
+                oscillator.connect(gainNode); 
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start(); 
+                oscillator.stop(audioCtx.currentTime + 0.08);
             } catch (e) {}
         };
 
