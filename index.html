@@ -41,7 +41,6 @@
             transition: opacity 0.8s ease-out;
         }
 
-        /* CRT 모니터 스타일 스캔라인 효과 */
         #loading-screen::after {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
@@ -50,7 +49,6 @@
         
         .loader-box { width: 340px; text-align: left; z-index: 102; position: relative; }
         
-        /* 메인 로딩 문구 글리치 효과 */
         .loading-text { 
             font-family: var(--font-main); font-size: 1rem; color: var(--main-blue); 
             letter-spacing: 2px; margin-bottom: 8px; height: 24px;
@@ -63,7 +61,6 @@
             100% { opacity: 1; text-shadow: 0 0 12px var(--main-blue), 0 0 4px var(--accent-pink); }
         }
 
-        /* 네온 그라데이션 로딩 바 */
         .loader-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin: 12px 0; border: 1px solid rgba(112,214,255,0.1); }
         .loader-bar { 
             width: 0%; height: 100%; 
@@ -74,13 +71,11 @@
 
         .loader-status-row { display: flex; justify-content: space-between; font-family: var(--font-light); font-size: 0.75rem; color: rgba(226, 232, 240, 0.6); letter-spacing: 1px; }
         
-        /* 서브 실시간 로그 연출 상자 */
         .sub-log-box {
             margin-top: 15px; height: 35px; overflow: hidden; font-family: monospace; font-size: 0.7rem; color: #4e759a; line-height: 1.4;
             border-top: 1px dashed rgba(112, 214, 255, 0.2); padding-top: 8px; pointer-events: none;
         }
 
-        /* --- 사이버 블루 프레임 스타일 --- */
         .login-frame, .user-select-frame {
             display: none;
             position: relative;
@@ -190,11 +185,11 @@
     </div>
 
     <div class="login-frame" id="login-content">
-        <h1>냥냥펀치</h1>
+        <h1>안아조요</h1>
         <input type="password" id="passcode" placeholder="PASSCODE_REQUIRED">
         <button id="login-btn" onclick="validateAccess()">ENTER SYSTEM</button>
         <div class="footer-info">
-            <span>UNIT: NYA-PPI</span>
+            <span>UNIT: ANAJOYO</span>
             <span>SECURE_MODE: ON</span>
         </div>
     </div>
@@ -210,28 +205,27 @@
     </div>
 
     <script type="module">
-        // 🌟 1. 똑같이 데이터베이스 라이브러리를 수입합니다.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 🌟 2. 동일한 콘솔 설정을 동기화합니다.
+        // 4. 🌟 Firebase 설정을 anajoyo 기반 파이어베이스 정보로 연동 (main.html과 완벽 매칭)
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
-            authDomain: "nya-ppi.firebaseapp.com",
-            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com",
-            projectId: "nya-ppi",
-            storageBucket: "nya-ppi.firebasestorage.app",
+            authDomain: "anajoyo.firebaseapp.com",
+            databaseURL: "https://anajoyo-default-rtdb.firebaseio.com",
+            projectId: "anajoyo",
+            storageBucket: "anajoyo.firebasestorage.app",
             messagingSenderId: "27439633492",
             appId: "1:27439633492:web:c60461eb2583b76e62c9c1"
         };
 
-        // 🌟 3. 활성화 선언을 해줍니다.
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app); // 👈 이 db 변수가 켜져야 메인에서 쏜 데이터를 실시간으로 수신합니다!
+        const db = getDatabase(app);
         const presenceRootRef = ref(db, 'multi_presence');
 
+        // 5. 기본 유저 프로필 목록 내부의 이전 이름(NYA_PPI)을 기본값인 ANAJOYO 형태로 변경
         let FIXED_USERS = [
-            { userId: "user_me", name: "NYA_PPI", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
+            { userId: "user_me", name: "ANAJOYO", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
             { userId: "user_member3", name: "댕댕이", icon: "🐶", xUrl: "https://x.com" },
             { userId: "user_member4", name: "삐약이", icon: "🐥", xUrl: "https://x.com" },
@@ -257,15 +251,15 @@
             }
         });
 
+        // 6. 🌟 자동 로그인 로컬 스토리지 키 식별자 변경 (`nya_multi_session` -> `anajoyo_multi_session`)
         window.addEventListener('load', () => {
-            const savedSession = localStorage.getItem('nya_multi_session');
+            const savedSession = localStorage.getItem('anajoyo_multi_session');
             if (savedSession) {
                 document.body.classList.add('fade-out');
                 setTimeout(() => { location.href = "main.html"; }, 500);
             }
         });
 
-        // 🌟 정밀하고 다채로워진 실시간 디코딩 문구 리스트
         const messages = [
             "CONNECTING TO BLUE_STREAM...", 
             "DECRYPTING SECURITY PROTOCOLS...",
@@ -276,7 +270,6 @@
             "ACCESS PIPELINE READY."
         ];
 
-        // 하단에 고속으로 찍히는 마이크로 로그 서브 시스템
         const microLogs = [
             "[OK] DB_STREAMER STARTED", "[INFO] NODE_CONNECTED: 27439633492",
             "[OK] PACKETS ROUTED VIA SECURE_SSL", "[SUCCESS] TOKEN DECRYPTED",
@@ -306,7 +299,6 @@
                 statusMsg.innerText = messages[msgIndex];
             }
 
-            // 진척도에 따라 마이크로 로그를 하단에 무작위로 계속 흘려보내 한층 고급스러운 연출 구현
             if (Math.random() > 0.4) {
                 const randomLog = microLogs[Math.floor(Math.random() * microLogs.length)];
                 subLogs.innerHTML = `> ${randomLog}<br>> SYSTEM STATUS: ${progress}% PROCESSING...`;
@@ -319,7 +311,8 @@
                 document.getElementById('loading-screen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loading-screen').style.display = 'none';
-                    if(!localStorage.getItem('nya_multi_session')) {
+                    // 7. 🌟 세션 확인 스토리지 키 식별자 변경 
+                    if(!localStorage.getItem('anajoyo_multi_session')) {
                         document.getElementById('login-content').style.display = 'block';
                     }
                 }, 800);
@@ -374,17 +367,18 @@
 
         function selectFixedUser(userObj) {
             const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
-            localStorage.setItem('nya_multi_session', JSON.stringify(finalUser));
+            // 8. 🌟 프로필 선택 후 로그인 성공 시 브라우저에 저장할 로컬스토리지 명칭 최종 변경
+            localStorage.setItem('anajoyo_multi_session', JSON.stringify(finalUser));
             document.body.classList.add('fade-out');
             setTimeout(() => { location.href = "main.html"; }, 600);
         }
 
-      document.getElementById('passcode').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-        e.preventDefault(); // 엔터 키의 기본 동작 방지
-        validateAccess();   // 모듈 내부 함수 직접 호출
-    }
-});
+        document.getElementById('passcode').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                validateAccess();
+            }
+        });
     </script>
 </body>
 </html>
