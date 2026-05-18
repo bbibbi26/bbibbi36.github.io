@@ -204,16 +204,17 @@
         </div>
     </div>
 
-  <script type="module">
+ <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
+        // 🌟 파이어베이스 인프라 주소를 anajoyo 핵심 주소로 완벽하게 정렬했습니다.
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
-            authDomain: "nya-ppi.firebaseapp.com",
-            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com",
-            projectId: "nya-ppi",
-            storageBucket: "nya-ppi.firebasestorage.app",
+            authDomain: "anajoyo.firebaseapp.com",
+            databaseURL: "https://anajoyo-default-rtdb.firebaseio.com",
+            projectId: "anajoyo",
+            storageBucket: "anajoyo.firebasestorage.app",
             messagingSenderId: "27439633492",
             appId: "1:27439633492:web:30be0dd3c47ae75562c9c1"
         };
@@ -222,7 +223,6 @@
         const db = getDatabase(app);
         const presenceRootRef = ref(db, 'multi_presence');
 
-        // [사이트 이름 검증] 새 사이트 명칭인 'anajoyo' 규격에 맞춰 세션 키 데이터 매핑 구조 정렬
         let FIXED_USERS = [
             { userId: "user_me", name: "ANAJOYO", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
@@ -232,7 +232,7 @@
             { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
         ];
 
-        // [동기화 핵심 수정] Realtime DB에서 변경 사항이 감지되면 상시 세션 정보 동기화
+        // Realtime DB에서 변경 사항이 감지되면 실시간으로 FIXED_USERS 배열 갱신
         onValue(presenceRootRef, (snap) => {
             const liveUsers = snap.val() || {};
             FIXED_USERS = FIXED_USERS.map(user => {
@@ -247,7 +247,7 @@
                 return user;
             });
 
-            // 현재 로컬 스토리지에 로그인 세션이 유지되어 있다면, Firebase의 최신 정보로 즉각 리프레시함
+            // 자동 로그인 유저 최신화
             const currentSessionStr = localStorage.getItem('anajoyo_multi_session');
             if (currentSessionStr) {
                 try {
@@ -261,11 +261,8 @@
                 }
             }
 
-            // 유저 선택 컴포넌트 활성화 중이면 리렌더링 (함수가 전역에 바인딩되어 있는지 체크)
             if (document.getElementById('user-select-content') && document.getElementById('user-select-content').style.display === 'block') {
-                if (typeof window.renderMemberGrid === 'function') {
-                    window.renderMemberGrid();
-                }
+                window.renderMemberGrid();
             }
         });
 
@@ -322,7 +319,6 @@
                 setTimeout(() => {
                     if(loaderScreen) loaderScreen.style.display = 'none';
                     
-                    // [정렬 완료] 새로운 사이트 전용 로컬 세션 키('anajoyo_multi_session')를 완벽하게 검사 및 리다이렉트
                     if (localStorage.getItem('anajoyo_multi_session')) {
                         document.body.classList.add('fade-out');
                         setTimeout(() => { location.href = "main.html"; }, 500);
@@ -346,7 +342,7 @@
                 setTimeout(() => {
                     document.getElementById('login-content').style.display = 'none';
                     document.getElementById('user-select-content').style.display = 'block';
-                    renderMemberGrid();
+                    window.renderMemberGrid();
                 }, 600);
             } else {
                 btn.innerText = "ACCESS DENIED";
@@ -360,8 +356,9 @@
             }
         };
 
-        function renderMemberGrid() {
+        window.renderMemberGrid = function() {
             const grid = document.getElementById('member-grid-target');
+            if(!grid) return;
             grid.innerHTML = '';
 
             FIXED_USERS.forEach(user => {
