@@ -33,7 +33,6 @@
 
         body.fade-out { opacity: 0; transform: scale(1.05); }
 
-        /* --- 🌟 사이버 로딩 화면 업그레이드 --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark); z-index: 100;
@@ -204,11 +203,11 @@
         </div>
     </div>
 
-<script type="module">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 🌟 nya-ppi 공식 인증 설정값 매핑 완료
+        // [인증] 파이어베이스 공식 Config 매핑 연동
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
@@ -223,7 +222,6 @@
         const db = getDatabase(app);
         const presenceRootRef = ref(db, 'multi_presence');
 
-        // 사이트 전용 기본 고정 유저 라인업 (닉네임 기본값: ANAJOYO)
         let FIXED_USERS = [
             { userId: "user_me", name: "ANAJOYO", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
@@ -233,7 +231,7 @@
             { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
         ];
 
-        // 파이어베이스 Realtime DB 감시 스레드
+        // Realtime DB의 'multi_presence' 방 감시 및 상시 동기화
         onValue(presenceRootRef, (snap) => {
             const liveUsers = snap.val() || {};
             FIXED_USERS = FIXED_USERS.map(user => {
@@ -248,7 +246,7 @@
                 return user;
             });
 
-            // 자동 로그인 정보 동기화 처리 구문
+            // 자동 로그인 유저 리프레시 캐싱 보완
             const currentSessionStr = localStorage.getItem('anajoyo_multi_session');
             if (currentSessionStr) {
                 try {
@@ -378,7 +376,7 @@
             });
         }
 
-        // 선택 즉시 구 데이터가 인젝션되지 않도록 실시간 최종 병합 배열에서 추출 저장
+        // [해결] 구 데이터 오버라이드 원천 봉쇄 루틴
         function selectFixedUser(userObj) {
             const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(finalUser));
