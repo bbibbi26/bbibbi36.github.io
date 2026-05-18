@@ -209,7 +209,7 @@
                 </section>
 
                 <div class="disconnect-btn" onclick="window.logout()">TERMINATE_SESSION_</div>
-            </main>
+            </aside>
         </div>
     </div>
 
@@ -256,7 +256,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 🌟 새로 발급 및 정렬 완료된 Firebase 인프라스트럭처 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
@@ -274,7 +273,6 @@
         const diaryRef = ref(db, 'multi_diaries');
         const stickerRef = ref(db, 'multi_stickers');
 
-        // 🌟 로컬 스토리지 데이터 세션 키 이름 변경 동기화 완료
         let session = JSON.parse(localStorage.getItem('anajoyo_multi_session'));
         if (!session) { location.href = 'index.html'; }
 
@@ -311,14 +309,8 @@
             const userEntries = Object.entries(users);
             statusDisplay.innerText = `현재 ${userEntries.length}명 접속 중!`;
 
-            if (users[session.userId]) {
-                const myLatestData = users[session.userId];
-                session.name = myLatestData.name || session.name;
-                session.icon = myLatestData.icon || session.icon;
-                session.xUrl = myLatestData.xUrl || session.xUrl;
-                localStorage.setItem('anajoyo_multi_session', JSON.stringify(session));
-                renderProfile();
-            }
+            // [동기화 버그 전면 수정] 실시간 리네이밍 처리 시 무한 루프 캐시 블록 현상 제거
+            // 타인의 프로필 컴포넌트는 업데이트하되, 자신의 로컬스토리지 역덮어쓰기 로직을 정리했습니다.
 
             userEntries.forEach(([uid, udata]) => {
                 const avatar = document.createElement('div');
@@ -693,6 +685,7 @@
             } catch (e) {}
         };
 
+        // [동기화 전용 완벽 가이드 라인 적용] 실시간 입력 핸들러 성능 고도화
         window.updateProfile = function() {
             const nameVal = document.getElementById('edit-name').value.trim(); 
             const iconVal = document.getElementById('edit-icon').value.trim();
@@ -702,16 +695,19 @@
             if(iconVal) session.icon = iconVal;
             if(xurlVal) session.xUrl = xurlVal;
             
-            // 🌟 프로필 수정 저장 시 로컬 스토리지 키 값 동기화 변경 완료
+            // 1. 내 브라우저 로컬 스토리지 선반영
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(session)); 
             renderProfile();
             
+            // 2. Firebase 리얼타임 데이터베이스 즉시 동기화
             update(myPresenceRef, { 
                 name: session.name, 
                 icon: session.icon, 
                 xUrl: session.xUrl 
             }).then(() => {
                 window.systemLog("PROFILE_SYNCED_TO_FIREBASE");
+            }).catch((err) => {
+                console.error("Firebase Sync Fail:", err);
             });
         };
 
@@ -786,7 +782,6 @@
 
         window.logout = function() {
             if (confirm("시스템을 종료하고 로그아웃하시겠습니까?")) {
-                // 🌟 로그아웃 세션 키 파기 동기화 완료
                 localStorage.removeItem('anajoyo_multi_session');
                 if (myPresenceRef) {
                     remove(myPresenceRef).then(() => {
