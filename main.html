@@ -139,8 +139,7 @@
     <div class="terminal-frame">
         <div class="content-wrapper">
             <aside class="sidebar">
-                <div class="user-list-container" id="online-users-list">
-                    </div>
+                <div class="user-list-container" id="online-users-list"></div>
 
                 <h3 id="session-name"></h3>
                 <p id="session-status" style="font-size: 0.65rem; color: var(--accent-blue); margin-bottom:15px;">서버 연결 중...</p>
@@ -257,15 +256,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 2. 🌟 Firebase 설정 정보를 anajoyo용 식별자로 변경 (만약 파이어베이스를 새로 판 게 아니라면 원래 쓰시던 정보로 돌려놓으셔도 됩니다)
+        // 🌟 새로 발급 및 정렬 완료된 Firebase 인프라스트럭처 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
-            authDomain: "anajoyo.firebaseapp.com",
-            databaseURL: "https://anajoyo-default-rtdb.firebaseio.com",
-            projectId: "anajoyo",
-            storageBucket: "anajoyo.firebasestorage.app",
+            authDomain: "nya-ppi.firebaseapp.com",
+            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com",
+            projectId: "nya-ppi",
+            storageBucket: "nya-ppi.firebasestorage.app",
             messagingSenderId: "27439633492",
-            appId: "1:27439633492:web:c60461eb2583b76e62c9c1"
+            appId: "1:27439633492:web:30be0dd3c47ae75562c9c1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -273,8 +272,9 @@
 
         const chatRef = ref(db, 'multi_chat_history');
         const diaryRef = ref(db, 'multi_diaries');
+        const stickerRef = ref(db, 'multi_stickers');
 
-        // 3. 🌟 로컬 스토리지 데이터 세션 키 이름 변경 (`nya_multi_session` -> `anajoyo_multi_session`)
+        // 🌟 로컬 스토리지 데이터 세션 키 이름 변경 동기화 완료
         let session = JSON.parse(localStorage.getItem('anajoyo_multi_session'));
         if (!session) { location.href = 'index.html'; }
 
@@ -301,7 +301,6 @@
             }
         });
 
-        // 🌟 onValue에 빠져있던 presenceRootRef 정의 추가 및 로컬스토리지 동기화 키 수정
         const presenceRootRef = ref(db, 'multi_presence');
         onValue(presenceRootRef, (snap) => {
             const users = snap.val() || {};
@@ -341,9 +340,6 @@
                 listContainer.appendChild(avatar);
             });
         });
-
-        // 스티커 부분에 빠져있던 stickerRef 정의 보완
-        const stickerRef = ref(db, 'multi_stickers');
 
         window.openStickerBook = function() {
             const book = document.getElementById('sticker-book');
@@ -540,7 +536,6 @@
                 }
             });
         }
-
         function showDiaryDetail(dateKey, diaryData) {
             selectedDiaryDate = dateKey;
             diaryAuthor = diaryData.authorId || "";
@@ -707,7 +702,7 @@
             if(iconVal) session.icon = iconVal;
             if(xurlVal) session.xUrl = xurlVal;
             
-            // 4. 🌟 프로필 수정 저장 시 로컬 스토리지 키 값 동기화 변경
+            // 🌟 프로필 수정 저장 시 로컬 스토리지 키 값 동기화 변경 완료
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(session)); 
             renderProfile();
             
@@ -791,7 +786,7 @@
 
         window.logout = function() {
             if (confirm("시스템을 종료하고 로그아웃하시겠습니까?")) {
-                // 5. 🌟 로그아웃 시 지워주는 로컬스토리지 세션 키 명칭 동기화
+                // 🌟 로그아웃 세션 키 파기 동기화 완료
                 localStorage.removeItem('anajoyo_multi_session');
                 if (myPresenceRef) {
                     remove(myPresenceRef).then(() => {
