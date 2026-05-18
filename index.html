@@ -208,7 +208,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 🌟 새로 제공해주신 Firebase 설정으로 완벽 교체 완료!
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
@@ -232,6 +231,7 @@
             { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
         ];
 
+        // [동기화 핵심 핵심 수정] Realtime DB에서 변경 사항이 감지되면 상시 세션 정보 동기화
         onValue(presenceRootRef, (snap) => {
             const liveUsers = snap.val() || {};
             FIXED_USERS = FIXED_USERS.map(user => {
@@ -245,16 +245,24 @@
                 }
                 return user;
             });
+
+            // 현재 로컬 스토리지에 로그인 세션이 유지되어 있다면, Firebase의 최신 정보로 즉각 리프레시함
+            const currentSessionStr = localStorage.getItem('anajoyo_multi_session');
+            if (currentSessionStr) {
+                try {
+                    const currentSession = JSON.parse(currentSessionStr);
+                    const updatedUser = FIXED_USERS.find(u => u.userId === currentSession.userId);
+                    if (updatedUser) {
+                        localStorage.setItem('anajoyo_multi_session', JSON.stringify(updatedUser));
+                    }
+                } catch (e) {
+                    console.error("Session parse error: ", e);
+                }
+            }
+
+            // 유저 선택 컴포넌트 활성화 중이면 리렌더링
             if (document.getElementById('user-select-content').style.display === 'block') {
                 renderMemberGrid();
-            }
-        });
-
-        window.addEventListener('load', () => {
-            const savedSession = localStorage.getItem('anajoyo_multi_session');
-            if (savedSession) {
-                document.body.classList.add('fade-out');
-                setTimeout(() => { location.href = "main.html"; }, 500);
             }
         });
 
@@ -309,7 +317,12 @@
                 document.getElementById('loading-screen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loading-screen').style.display = 'none';
-                    if(!localStorage.getItem('anajoyo_multi_session')) {
+                    
+                    // [자동 로그인 타이밍 보완] 로딩바와 DB 싱크가 완벽히 끝난 시점에 세션 체크 후 이동
+                    if (localStorage.getItem('anajoyo_multi_session')) {
+                        document.body.classList.add('fade-out');
+                        setTimeout(() => { location.href = "main.html"; }, 500);
+                    } else {
                         document.getElementById('login-content').style.display = 'block';
                     }
                 }, 800);
