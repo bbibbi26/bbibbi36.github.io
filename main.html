@@ -108,6 +108,78 @@
         .user-avatar-btn:hover .user-tooltip {
             display: block;
         }
+
+        /* --- 로딩 화면(부트 로더) 개편 스타일 --- */
+#boot-loader {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #0a0e17; /* 배경색 통일 */
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease-out;
+}
+
+/* CRT 스캔라인 효과 */
+#boot-loader::after {
+    content: " "; display: block; position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 10000; background-size: 100% 3px, 6px 100%; pointer-events: none;
+}
+
+.loader-content {
+    width: 340px;
+    text-align: left;
+    position: relative;
+    z-index: 10001;
+}
+
+.loader-text-main {
+    font-family: 'GmarketSansBold', sans-serif;
+    font-size: 1.1rem;
+    color: var(--main-blue);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(112, 214, 255, 0.5);
+    animation: textPulse 1.5s infinite alternate;
+}
+
+@keyframes textPulse {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; text-shadow: 0 0 15px var(--main-blue), 0 0 5px var(--main-pink); }
+}
+
+.loader-bar-bg {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 1px solid rgba(112, 214, 255, 0.1);
+}
+
+.loader-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--main-blue), var(--main-pink));
+    box-shadow: 0 0 15px var(--main-blue);
+    transition: width 0.3s ease;
+}
+
+.loader-log {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: #4e759a;
+    line-height: 1.5;
+    height: 32px;
+    overflow: hidden;
+}
     </style>
 </head>
 <body ondragover="event.preventDefault()" ondrop="window.handleDrop(event)">
@@ -140,7 +212,18 @@
     </div>
     
     <div id="system-log-bg"></div>
-    <div id="boot-loader"><div id="loader-text">> INITIALIZING_MULTI_CONNECTION...</div></div>
+   <div id="boot-loader">
+    <div class="loader-content">
+        <div class="loader-text-main" id="loader-msg">INITIALIZING_SYSTEM...</div>
+        <div class="loader-bar-bg">
+            <div class="loader-bar-fill" id="loader-bar"></div>
+        </div>
+        <div class="loader-log" id="loader-log">
+            > LOADING_CYBER_ASSETS...<br>
+            > CONNECTING_TO_BLUE_STREAM...
+        </div>
+    </div>
+</div>
 
     <div class="terminal-frame">
         <div class="content-wrapper">
@@ -796,6 +879,42 @@
                 } else { location.href = "index.html"; }
             }
         };
+// --- 개편된 로딩 스크립트 ---
+        const loaderMessages = [
+            "ACCESSING_ARCHIVE...",
+            "DECRYPTING_STORED_DATA...",
+            "STABILIZING_INTERFACE...",
+            "SYNCING_MEMORIES...",
+            "WELCOME_BACK."
+        ];
+        
+        let loaderProgress = 0;
+        const loaderBar = document.getElementById('loader-bar');
+        const loaderMsg = document.getElementById('loader-msg');
+        
+        const loaderInterval = setInterval(() => {
+            loaderProgress += Math.floor(Math.random() * 15) + 5;
+            if (loaderProgress >= 100) {
+                loaderProgress = 100;
+                clearInterval(loaderInterval);
+                setTimeout(finishLoading, 400);
+            }
+            if(loaderBar) loaderBar.style.width = loaderProgress + "%";
+            
+            // 메시지 순차 변경
+            const msgIdx = Math.floor((loaderProgress / 100) * loaderMessages.length);
+            if(loaderMsg && loaderMessages[msgIdx]) loaderMsg.innerText = loaderMessages[msgIdx];
+        }, 150);
+
+        function finishLoading() {
+            const loader = document.getElementById('boot-loader');
+            if(loader) {
+                loader.style.opacity = "0";
+                setTimeout(() => loader.remove(), 800);
+            }
+            window.systemLog("SYSTEM_BOOT_COMPLETE");
+        }
+      
     </script>
 </body>
 </html>
