@@ -254,32 +254,28 @@
     </div>
 
     <script type="module">
-        // 🌟 1. 맨 위에 데이터베이스 필수 기능 라이브러리를 추가합니다.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 🌟 2. 그 아래에 확인하신 콘솔 설정을 넣습니다.
+        // 2. 🌟 Firebase 설정 정보를 anajoyo용 식별자로 변경 (만약 파이어베이스를 새로 판 게 아니라면 원래 쓰시던 정보로 돌려놓으셔도 됩니다)
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
-            authDomain: "nya-ppi.firebaseapp.com",
-            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com",
-            projectId: "nya-ppi",
-            storageBucket: "nya-ppi.firebasestorage.app",
+            authDomain: "anajoyo.firebaseapp.com",
+            databaseURL: "https://anajoyo-default-rtdb.firebaseio.com",
+            projectId: "anajoyo",
+            storageBucket: "anajoyo.firebasestorage.app",
             messagingSenderId: "27439633492",
             appId: "1:27439633492:web:c60461eb2583b76e62c9c1"
         };
 
-        // 🌟 3. 데이터베이스 시스템 활성화를 호출합니다.
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app); // 👈 이제 이 db 변수가 동작하여 데이터를 실제로 쏩니다!
+        const db = getDatabase(app);
 
-        // --- 이 밑으로는 기존에 있던 나머지 자바스크립트 로직들을 그대로 유지하시면 됩니다 ---
         const chatRef = ref(db, 'multi_chat_history');
         const diaryRef = ref(db, 'multi_diaries');
-        // ... 생략
 
-        // 세션 로드
-        let session = JSON.parse(localStorage.getItem('nya_multi_session'));
+        // 3. 🌟 로컬 스토리지 데이터 세션 키 이름 변경 (`nya_multi_session` -> `anajoyo_multi_session`)
+        let session = JSON.parse(localStorage.getItem('anajoyo_multi_session'));
         if (!session) { location.href = 'index.html'; }
 
         let lastMessageId = null;
@@ -291,7 +287,6 @@
         let isEditing = false;
         let diaryAuthor = "";
 
-        // 내 상태 실시간 온라인 유지 설정
         const myPresenceRef = ref(db, `multi_presence/${session.userId}`);
         const connectedRef = ref(db, '.info/connected');
         onValue(connectedRef, (snap) => {
@@ -306,7 +301,8 @@
             }
         });
 
-        // 🌟 [버그 수정] 실시간 데이터베이스 값 변경 시 내 세션 정보도 즉시 동기화하도록 보정
+        // 🌟 onValue에 빠져있던 presenceRootRef 정의 추가 및 로컬스토리지 동기화 키 수정
+        const presenceRootRef = ref(db, 'multi_presence');
         onValue(presenceRootRef, (snap) => {
             const users = snap.val() || {};
             const listContainer = document.getElementById('online-users-list');
@@ -316,14 +312,13 @@
             const userEntries = Object.entries(users);
             statusDisplay.innerText = `현재 ${userEntries.length}명 접속 중!`;
 
-            // 1. 내 정보가 DB에 있다면 로컬 세션 데이터 변수와 동기화 시켜줌
             if (users[session.userId]) {
                 const myLatestData = users[session.userId];
                 session.name = myLatestData.name || session.name;
                 session.icon = myLatestData.icon || session.icon;
                 session.xUrl = myLatestData.xUrl || session.xUrl;
-                localStorage.setItem('nya_multi_session', JSON.stringify(session));
-                renderProfile(); // 대시보드 내 이름 텍스트 즉시 갱신
+                localStorage.setItem('anajoyo_multi_session', JSON.stringify(session));
+                renderProfile();
             }
 
             userEntries.forEach(([uid, udata]) => {
@@ -347,7 +342,9 @@
             });
         });
 
-        // 글로벌 스코프에 함수 할당 (HTML onclick 바인딩용)
+        // 스티커 부분에 빠져있던 stickerRef 정의 보완
+        const stickerRef = ref(db, 'multi_stickers');
+
         window.openStickerBook = function() {
             const book = document.getElementById('sticker-book');
             const wrapper = document.getElementById('sticker-area-wrapper');
@@ -701,7 +698,6 @@
             } catch (e) {}
         };
 
-        // 🌟 [프로필 저장 로직 강화] 로컬 변수를 즉시 바꾸고 변경사항을 파이어베이스에 송신
         window.updateProfile = function() {
             const nameVal = document.getElementById('edit-name').value.trim(); 
             const iconVal = document.getElementById('edit-icon').value.trim();
@@ -711,7 +707,8 @@
             if(iconVal) session.icon = iconVal;
             if(xurlVal) session.xUrl = xurlVal;
             
-            localStorage.setItem('nya_multi_session', JSON.stringify(session)); 
+            // 4. 🌟 프로필 수정 저장 시 로컬 스토리지 키 값 동기화 변경
+            localStorage.setItem('anajoyo_multi_session', JSON.stringify(session)); 
             renderProfile();
             
             update(myPresenceRef, { 
@@ -769,7 +766,6 @@
             if(loader) { loader.style.opacity = "0"; setTimeout(() => loader.remove(), 500); } 
         }, 800);
         
-        // 실시간 채팅 가져오기
         onValue(chatRef, (snapshot) => {
             const data = snapshot.val();
             renderComments(data);
@@ -795,7 +791,8 @@
 
         window.logout = function() {
             if (confirm("시스템을 종료하고 로그아웃하시겠습니까?")) {
-                localStorage.removeItem('nya_multi_session');
+                // 5. 🌟 로그아웃 시 지워주는 로컬스토리지 세션 키 명칭 동기화
+                localStorage.removeItem('anajoyo_multi_session');
                 if (myPresenceRef) {
                     remove(myPresenceRef).then(() => {
                         window.playSystemSound();
