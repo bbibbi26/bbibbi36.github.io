@@ -209,7 +209,7 @@
                 </section>
 
                 <div class="disconnect-btn" onclick="window.logout()">TERMINATE_SESSION_</div>
-            </aside>
+            </main>
         </div>
     </div>
 
@@ -284,6 +284,7 @@
         let selectedDiaryImgData = "";
         let isEditing = false;
         let diaryAuthor = "";
+        let profileSyncTimeout = null; // 디바운스 버퍼 홀더
 
         const myPresenceRef = ref(db, `multi_presence/${session.userId}`);
         const connectedRef = ref(db, '.info/connected');
@@ -308,9 +309,6 @@
 
             const userEntries = Object.entries(users);
             statusDisplay.innerText = `현재 ${userEntries.length}명 접속 중!`;
-
-            // [동기화 버그 전면 수정] 실시간 리네이밍 처리 시 무한 루프 캐시 블록 현상 제거
-            // 타인의 프로필 컴포넌트는 업데이트하되, 자신의 로컬스토리지 역덮어쓰기 로직을 정리했습니다.
 
             userEntries.forEach(([uid, udata]) => {
                 const avatar = document.createElement('div');
@@ -685,30 +683,34 @@
             } catch (e) {}
         };
 
-        // [동기화 전용 완벽 가이드 라인 적용] 실시간 입력 핸들러 성능 고도화
+        // [프로필 실시간 왜곡 현상 전면 차단 구현] 디바운스 기술 적용
         window.updateProfile = function() {
             const nameVal = document.getElementById('edit-name').value.trim(); 
             const iconVal = document.getElementById('edit-icon').value.trim();
             const xurlVal = document.getElementById('edit-xurl').value.trim();
             
+            // 인풋 값이 존재할 때만 로컬 세션 데이터 변경 정렬
             if(nameVal) session.name = nameVal; 
-            if(iconVal) session.icon = iconVal;
-            if(xurlVal) session.xUrl = xurlVal;
+            session.icon = iconVal; // 아이콘이나 X주소는 공백으로 지울 수도 있으므로 허용
+            session.xUrl = xurlVal;
             
-            // 1. 내 브라우저 로컬 스토리지 선반영
+            // 1. 먼저 내 화면과 로컬 스토리지를 지연 없이 즉시 업데이트
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(session)); 
             renderProfile();
             
-            // 2. Firebase 리얼타임 데이터베이스 즉시 동기화
-            update(myPresenceRef, { 
-                name: session.name, 
-                icon: session.icon, 
-                xUrl: session.xUrl 
-            }).then(() => {
-                window.systemLog("PROFILE_SYNCED_TO_FIREBASE");
-            }).catch((err) => {
-                console.error("Firebase Sync Fail:", err);
-            });
+            // 2. 타이핑 도중 비동기 트래픽 파편화로 롤백되는 문제를 막기 위해 디바운스 디레이(500ms) 추가
+            clearTimeout(profileSyncTimeout);
+            profileSyncTimeout = setTimeout(() => {
+                update(myPresenceRef, { 
+                    name: session.name, 
+                    icon: session.icon, 
+                    xUrl: session.xUrl 
+                }).then(() => {
+                    window.systemLog("PROFILE_SYNCED_TO_FIREBASE");
+                }).catch((err) => {
+                    console.error("Firebase Sync Fail:", err);
+                });
+            }, 500);
         };
 
         function renderProfile() {
