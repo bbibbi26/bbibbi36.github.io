@@ -7,7 +7,6 @@
     <link href="https://webfontworld.github.io/gmarket/GmarketSans.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 모드 전환 버튼 전용 스타일 */
         .tool-btn {
             font-size: 9px;
             padding: 3px 8px;
@@ -26,7 +25,6 @@
             border-color: #fff;
             box-shadow: 0 0 10px #ff7eb9;
         }
-        /* 캔버스 기본 설정 */
         #drawing-canvas {
             position: absolute;
             top: 0;
@@ -34,7 +32,6 @@
             z-index: 500;
             pointer-events: none;
         }
-        /* 채팅 이미지 확대 모드 */
         #chat-image-overlay {
             position: fixed;
             top: 0;
@@ -56,7 +53,6 @@
             border-radius: 8px;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
         }
-        /* 다인원용 접속자 리스트 스타일 */
         .user-list-container {
             display: flex;
             gap: 6px;
@@ -254,7 +250,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, update, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
@@ -286,7 +282,7 @@
         let diaryAuthor = "";
         let profileSyncTimeout = null; 
 
-        // 🌟 내 전용 방의 주소를 정확히 인지시킵니다.
+        // 🌟 [설계 매핑 완료] 구버전의 동적 할당 경로가 아닌, 고정 식별자(userId)로 방을 정확하게 지정합니다.
         const myPresenceRef = ref(db, `multi_presence/${session.userId}`);
         const connectedRef = ref(db, '.info/connected');
 
@@ -314,9 +310,7 @@
             statusDisplay.innerText = `현재 ${userEntries.length}명 접속 중!`;
 
             userEntries.forEach(([uid, udata]) => {
-                // 🌟 [핵심 수정] 타인의 변경 사항으로 내 닉네임 인풋 도중 역류(롤백) 현상이 일어나지 않도록 나 자신은 배제합니다.
                 if (uid === session.userId) {
-                    // 화면 좌측 프로필 영역의 텍스트 타이틀만 서버 최신 값으로 리렌더링
                     renderProfile();
                 }
 
@@ -658,7 +652,6 @@
             reader.readAsDataURL(file);
         }
 
-        // 메시지 전송 시 무조건 최신 상태 세션 구조를 사용하도록 보완
         function sendDirectMessage(content) {
             const latestSession = JSON.parse(localStorage.getItem('anajoyo_multi_session')) || session;
             push(chatRef, { 
@@ -703,13 +696,12 @@
             } catch (e) {}
         };
 
-        // 🌟 [최종 해결 가이드 라인] 세션 스토리지 파편화 차단 및 Firebase 동시 인젝팅 루틴
+        // 🌟 [통로 단일화 마감] 딜레이 없이 즉각 동기화하고 파이어베이스 주소를 원자화하여 밀어 넣습니다.
         window.updateProfile = function() {
             const nameVal = document.getElementById('edit-name').value.trim(); 
             const iconVal = document.getElementById('edit-icon').value.trim();
             const xurlVal = document.getElementById('edit-xurl').value.trim();
             
-            // 공백 안전장치 및 로컬 세션 값 고정 반영
             session.name = nameVal || "Unknown"; 
             session.icon = iconVal;
             session.xUrl = xurlVal;
@@ -717,10 +709,8 @@
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(session)); 
             renderProfile();
             
-            // 입력 도중 트래픽이 요동쳐서 롤백되지 않도록 500ms 디바운스 적용 후 Firebase 데이터베이스 전송
             clearTimeout(profileSyncTimeout);
             profileSyncTimeout = setTimeout(() => {
-                // 로그인 화면(index.html)이 완벽하게 캐치할 수 있도록 내 주소방(myPresenceRef) 데이터를 원자적으로 업데이트합니다.
                 update(myPresenceRef, { 
                     name: session.name, 
                     icon: session.icon, 
@@ -768,7 +758,6 @@
 
         window.deleteMessage = function(key) { if (confirm("기록을 파기할까요?")) remove(ref(db, `multi_chat_history/${key}`)); };
 
-        // 초기 바인딩부 세팅
         document.getElementById('edit-name').value = session.name || ''; 
         document.getElementById('edit-icon').value = session.icon || '';
         document.getElementById('edit-xurl').value = session.xUrl || '';
