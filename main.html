@@ -273,6 +273,7 @@
         const diaryRef = ref(db, 'multi_diaries');
         const stickerRef = ref(db, 'multi_stickers');
 
+        // [확인] 로컬 세션 감지 및 초기화
         let session = JSON.parse(localStorage.getItem('anajoyo_multi_session'));
         if (!session) { location.href = 'index.html'; }
 
@@ -284,38 +285,60 @@
         let selectedDiaryImgData = "";
         let isEditing = false;
         let diaryAuthor = "";
-        let profileSyncTimeout = null; // 디바운스 버퍼 홀더
+        let profileSyncTimeout = null; 
 
         const myPresenceRef = ref(db, `multi_presence/${session.userId}`);
         const connectedRef = ref(db, '.info/connected');
+
+        // [교정 1] 접속 감지 시 단순 덮어쓰기가 아닌 최신 로컬 데이터 정렬 전송
         onValue(connectedRef, (snap) => {
             if (snap.val() === true) {
                 onDisconnect(myPresenceRef).remove();
-                set(myPresenceRef, {
-                    name: session.name,
-                    icon: session.icon,
-                    xUrl: session.xUrl,
+                update(myPresenceRef, {
+                    name: session.name || 'Unknown',
+                    icon: session.icon || '',
+                    xUrl: session.xUrl || '',
                     status: 'ONLINE'
                 });
             }
         });
 
+        // [교정 2] 실시간 다인원 접속 리스너 - 내 데이터 동기화 롤백 루프 완벽 차단
         const presenceRootRef = ref(db, 'multi_presence');
         onValue(presenceRootRef, (snap) => {
             const users = snap.val() || {};
             const listContainer = document.getElementById('online-users-list');
             const statusDisplay = document.getElementById('session-status');
-            listContainer.innerHTML = '';
+            if (!listContainer) return;
 
+            listContainer.innerHTML = '';
             const userEntries = Object.entries(users);
             statusDisplay.innerText = `현재 ${userEntries.length}명 접속 중!`;
 
             userEntries.forEach(([uid, udata]) => {
+                // 내 ID에 해당하는 데이터가 서버에서 변경되었을 때만 로컬 세션 객체 보완 업데이트
+                if (uid === session.userId) {
+                    session.name = udata.name || session.name;
+                    session.icon = udata.icon !== undefined ? udata.icon : session.icon;
+                    session.xUrl = udata.xUrl !== undefined ? udata.xUrl : session.xUrl;
+                    localStorage.setItem('anajoyo_multi_session', JSON.stringify(session));
+                    
+                    // 상단 사이트 이름 UI 동적 반영 처리 명시
+                    const sessionNameTitle = document.getElementById('session-name');
+                    if (sessionNameTitle) {
+                        sessionNameTitle.innerText = session.name;
+                    }
+                }
+
                 const avatar = document.createElement('div');
                 avatar.className = 'user-avatar-btn';
+                
+                // 내 아바타 테두리 강조
                 if (uid === session.userId) {
                     avatar.style.border = '2px solid #fff';
+                    avatar.style.boxShadow = '0 0 12px #ff7eb9';
                 }
+
                 const isImage = udata.icon && (udata.icon.startsWith('http') || udata.icon.startsWith('data:image'));
                 avatar.innerHTML = isImage ? `<img src="${udata.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : (udata.icon || '👤');
                 avatar.innerHTML += `<div class="user-tooltip">${udata.name}</div>`;
