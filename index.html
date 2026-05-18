@@ -204,10 +204,10 @@
     </div>
 
     <script type="module">
+        // 🌟 [교정 완료] 임포트할 때 대기 화면에 필요한 필수 파이어베이스 라이브러리 규격을 온전하게 선언했습니다.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // [인증] 파이어베이스 공식 Config 매핑 연동
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
             authDomain: "nya-ppi.firebaseapp.com",
@@ -231,7 +231,6 @@
             { userId: "user_member6", name: "곰돌이", icon: "🐻", xUrl: "https://x.com" }
         ];
 
-        // Realtime DB의 'multi_presence' 방 감시 및 상시 동기화
         onValue(presenceRootRef, (snap) => {
             const liveUsers = snap.val() || {};
             FIXED_USERS = FIXED_USERS.map(user => {
@@ -246,7 +245,6 @@
                 return user;
             });
 
-            // 자동 로그인 유저 리프레시 캐싱 보완
             const currentSessionStr = localStorage.getItem('anajoyo_multi_session');
             if (currentSessionStr) {
                 try {
@@ -363,10 +361,10 @@
             FIXED_USERS.forEach(user => {
                 const opt = document.createElement('div');
                 opt.className = 'user-option';
-                opt.onclick = () => selectFixedUser(user);
+                opt.onclick = () => window.selectFixedUser(user);
 
                 const isImg = user.icon && (user.icon.startsWith('http') || user.icon.startsWith('data:image'));
-                const avatarHTML = isImg ? `<img src="${user.icon}">` : (user.icon || '👤');
+                const avatarHTML = isImg ? `<img src="${user.icon}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : (user.icon || '👤');
 
                 opt.innerHTML = `
                     <div class="user-avatar">${avatarHTML}</div>
@@ -376,8 +374,8 @@
             });
         }
 
-        // [해결] 구 데이터 오버라이드 원천 봉쇄 루틴
-        function selectFixedUser(userObj) {
+        // 🌟 [글로벌 마감] 모듈 스코프에서 분리하여 어디서나 완벽하게 연동을 가로채 세션에 안착시키도록 수정했습니다.
+        window.selectFixedUser = function(userObj) {
             const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(finalUser));
             document.body.classList.add('fade-out');
@@ -387,7 +385,7 @@
         document.getElementById('passcode').addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                validateAccess();
+                window.validateAccess();
             }
         });
     </script>
