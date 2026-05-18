@@ -208,22 +208,21 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // 4. 🌟 Firebase 설정을 anajoyo 기반 파이어베이스 정보로 연동 (main.html과 완벽 매칭)
+        // 🌟 새로 제공해주신 Firebase 설정으로 완벽 교체 완료!
         const firebaseConfig = {
             apiKey: "AIzaSyDi9JQLtpp4KaF5mGkf0aApv_fcQP2PpD0",
-            authDomain: "anajoyo.firebaseapp.com",
-            databaseURL: "https://anajoyo-default-rtdb.firebaseio.com",
-            projectId: "anajoyo",
-            storageBucket: "anajoyo.firebasestorage.app",
+            authDomain: "nya-ppi.firebaseapp.com",
+            databaseURL: "https://nya-ppi-default-rtdb.firebaseio.com",
+            projectId: "nya-ppi",
+            storageBucket: "nya-ppi.firebasestorage.app",
             messagingSenderId: "27439633492",
-            appId: "1:27439633492:web:c60461eb2583b76e62c9c1"
+            appId: "1:27439633492:web:30be0dd3c47ae75562c9c1"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const presenceRootRef = ref(db, 'multi_presence');
 
-        // 5. 기본 유저 프로필 목록 내부의 이전 이름(NYA_PPI)을 기본값인 ANAJOYO 형태로 변경
         let FIXED_USERS = [
             { userId: "user_me", name: "ANAJOYO", icon: "🐰", xUrl: "https://x.com/Bow_wow__14" },
             { userId: "user_other", name: "ADMIN", icon: "🐱", xUrl: "https://x.com/ff14_bbiy" },
@@ -251,7 +250,6 @@
             }
         });
 
-        // 6. 🌟 자동 로그인 로컬 스토리지 키 식별자 변경 (`nya_multi_session` -> `anajoyo_multi_session`)
         window.addEventListener('load', () => {
             const savedSession = localStorage.getItem('anajoyo_multi_session');
             if (savedSession) {
@@ -311,7 +309,6 @@
                 document.getElementById('loading-screen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loading-screen').style.display = 'none';
-                    // 7. 🌟 세션 확인 스토리지 키 식별자 변경 
                     if(!localStorage.getItem('anajoyo_multi_session')) {
                         document.getElementById('login-content').style.display = 'block';
                     }
@@ -367,7 +364,6 @@
 
         function selectFixedUser(userObj) {
             const finalUser = FIXED_USERS.find(u => u.userId === userObj.userId) || userObj;
-            // 8. 🌟 프로필 선택 후 로그인 성공 시 브라우저에 저장할 로컬스토리지 명칭 최종 변경
             localStorage.setItem('anajoyo_multi_session', JSON.stringify(finalUser));
             document.body.classList.add('fade-out');
             setTimeout(() => { location.href = "main.html"; }, 600);
